@@ -70,5 +70,6 @@ export function useAuth() {
     hasRole,
     login,
     logout: handleLogout,
+    keycloak, // expuesto para que AdminDashboard, UsersPage y UserDetailPage puedan obtener el token
   };
 }

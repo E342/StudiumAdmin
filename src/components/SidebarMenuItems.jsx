@@ -22,7 +22,7 @@ export const sidebarMenuItems = [
     {
         title: "Perfil",
         path: "/perfil",
-        icon: <LuIcons.LuUserCircle2 />,
+        icon: <LuIcons.LuUserRound />,
         cName: "nav-text",
     },
     {
