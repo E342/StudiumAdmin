@@ -1,0 +1,59 @@
+GUÍA DE CONFIGURACIÓN DEL PROYECTO STUDIUM
+
+1. Instalar dependencias del proyecto (ejecutar en orden en la consola de vs code)
+npm install
+docker compose pull keycloak
+docker compose up -d
+
+2. Configurar Keycloak
+Abrir el navegador y entrar a:
+http://localhost:8080
+
+Iniciar sesión con las credenciales de administrador:
+Usuario: admin
+Contraseña: admin
+
+3. Crear el realm "studium"
+En Keycloak, arriba a la izquierda donde dice "Manage realms":
+1. Haz clic en "Create realm"
+2. Realm name: studium
+3. Clic en Create
+
+4. Crear el client "studium-frontend"
+
+Ya dentro del realm "studium", ir a Clients -> Create Client 
+Client ID: studium-frontend
+Next → Client authentication: OFF
+Next → URLs:
+Root URL: http://localhost:5174
+Valid redirect URIs: http://localhost:5174/*
+Valid post logout redirect URIs: http://localhost:5174/*
+Web origins: http://localhost:5174
+Save
+
+5. Crear un usuario de prueba
+Users → Create new user
+Username: studium -> Create
+En el menu de arriba aparece Credentials → Set password -> 
+Password: admin123
+Desactiva Temporary → Save password
+
+6. Agregar Microsoft como Identity Provider
+En Keycloak, asegúrate de estar en el realm "studium", luego:
+
+Menú izquierdo abajo → Identity providers
+Busca y selecciona Microsoft
+
+Completar los siguientes campos con esos valores
+Client ID: fe55a664-9def-4f53-944f-5b30560ae7a7
+Client Secret:[NO INCLUIR EN EL REPOSITORIO]
+
+7. Probar el login del proyecto (desde vs code)
+
+Levantar el frontend con:
+npm run dev
+
+Entrar al navegador en:
+http://localhost:5174/
+
+Y tratar de iniciar sesión con la cuenta de Microsoft.

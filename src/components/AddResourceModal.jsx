@@ -4,6 +4,7 @@ import axios from "axios";
 import { GLOBAL } from '../services/apiConfig';
 import PropTypes from 'prop-types';
 import { showSuccess, showError } from '../utils/alerts';
+import { uploadFileToCloudinary, isCloudinaryConfigured, MAX_FILE_SIZE_BYTES } from '../services/cloudinary';
 
 export const AddResourceModal = ({ idCurso, closeModal, onSubmit, defaultValue }) => {
     const API_URL = GLOBAL.map((e) => { return e.BASE_URL });
@@ -13,8 +14,11 @@ export const AddResourceModal = ({ idCurso, closeModal, onSubmit, defaultValue }
         defaultValue || {
             titulo: "",
             descripcion: "",
+            archivo: "",
         }
     );
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -24,13 +28,65 @@ export const AddResourceModal = ({ idCurso, closeModal, onSubmit, defaultValue }
         }));
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) {
+            setSelectedFile(null);
+            return;
+        }
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+            showError({
+                title: 'Archivo demasiado grande',
+                text: 'El archivo no debe superar los 2 MB.',
+            });
+            e.target.value = '';
+            setSelectedFile(null);
+            return;
+        }
+        setSelectedFile(file);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Si se seleccionó un archivo, primero se sube a Cloudinary.
+        let archivoUrl = formState.archivo || "";
+        if (selectedFile) {
+            if (!isCloudinaryConfigured) {
+                showError({
+                    title: 'Subida no disponible',
+                    text: 'La carga de archivos a la nube no está configurada. Contacta al administrador.',
+                });
+                return;
+            }
+            try {
+                setIsUploading(true);
+                const uploadResult = await uploadFileToCloudinary(selectedFile);
+                archivoUrl = uploadResult.secure_url;
+            } catch (uploadError) {
+                console.error('Error al subir el archivo a Cloudinary:', uploadError);
+                showError({
+                    title: 'No se pudo subir el archivo',
+                    text: 'Ocurrió un error al cargar el archivo. Inténtalo nuevamente.',
+                });
+                return;
+            } finally {
+                setIsUploading(false);
+            }
+        }
+
         try {
-            const response = await axios.post(`${API_URL}/course/resources/${idCurso}`, formState);
+            const payload = { ...formState, archivo: archivoUrl };
+            const token = localStorage.getItem('TOKEN');
+            const response = await axios.post(`${API_URL}/course/resources/${idCurso}`, payload, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             if (response.status === 200 || response.status === 201) {
                 console.log("Información enviada correctamente:", response.data);
-                onSubmit(formState);
+                onSubmit(payload);
                 await showSuccess({
                     title: 'Recurso agregado',
                     text: 'El recurso fue añadido correctamente al curso.',
@@ -46,11 +102,17 @@ export const AddResourceModal = ({ idCurso, closeModal, onSubmit, defaultValue }
                 });
             }
         } catch (error) {
-            console.error("Error al enviar la información:", error);
-            showError({
-                title: 'Error de conexión',
-                text: 'No se pudo conectar con el servidor. Inténtalo nuevamente más tarde.',
-            });
+            if (error.response?.status === 400) {
+                showError({
+                    title: 'Contenido inapropiado',
+                    text: 'Por favor,  mantén el contenido de tu recurso adecuado y sin lenguaje ofensivo.',
+                });
+            } else {
+                showError({
+                    title: 'Error de conexión',
+                    text: 'No se pudo conectar con el servidor. Inténtalo nuevamente más tarde.',
+                });
+            }
         }
 
     };
@@ -94,8 +156,22 @@ export const AddResourceModal = ({ idCurso, closeModal, onSubmit, defaultValue }
               className="auto-resize-textarea"
             />
           </div>
-                    <button type="submit" className="btn">
-                        Guardar
+                    <div className="form-group">
+                        <label htmlFor="archivo">Archivo (máx. 2 MB):</label>
+                        <input
+                            type="file"
+                            name="archivo"
+                            id="archivo"
+                            onChange={handleFileChange}
+                        />
+                        {selectedFile && (
+                            <small className="file-info">
+                                {selectedFile.name} ({(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)
+                            </small>
+                        )}
+                    </div>
+                    <button type="submit" className="btn" disabled={isUploading}>
+                        {isUploading ? 'Subiendo archivo...' : 'Guardar'}
                     </button>
                 </form>
             </div>

@@ -45,6 +45,39 @@ div.bigContainerRecursos {
     //background-color: aqua;
     @include centrar-elemento;
 
+    .estado-mensaje {
+        text-align: center;
+        color: $color-azul;
+        padding: 2rem;
+        font-size: x-large;
+        font-family: $tipografia;
+
+        &.estado-error {
+            color: $color-rosa-oscuro;
+        }
+    }
+
+    .acceso-denegado {
+        @include box-shadow-style;
+        background-color: $color-blanco;
+        border-radius: 1rem;
+        padding: 2rem;
+        margin: 1rem;
+        max-width: 600px;
+        text-align: center;
+        font-family: $tipografia;
+
+        h2 {
+            color: $color-rosa-oscuro;
+            font-size: x-large;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: $color-azul;
+            font-size: large;
+        }
+    }
 
     article.header {
         display: flex;
@@ -102,6 +135,64 @@ div.bigContainerRecursos {
             margin: 1rem;
             min-height: 300px;
             @include box-shadow-style;
+
+            .recursos-cloudinary {
+                margin-top: 1.5rem;
+                padding-top: 1rem;
+                border-top: 2px solid $color-rosa;
+
+                .recursos-cloudinary-title {
+                    color: $color-azul;
+                    font-family: $tipografia;
+                    font-size: large;
+                    margin-bottom: 1rem;
+                }
+
+                .recursos-cloudinary-grid {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 1rem;
+                }
+
+                .recursos-cloudinary-item {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    width: 140px;
+                    padding: .5rem;
+                    border-radius: .75rem;
+                    text-decoration: none;
+                    color: $color-azul;
+                    background-color: #fffafa;
+                    @include box-shadow-style;
+                    transition: transform .15s ease;
+
+                    &:hover {
+                        transform: translateY(-3px);
+                    }
+
+                    img {
+                        width: 100%;
+                        height: 100px;
+                        object-fit: cover;
+                        border-radius: .5rem;
+                        margin-bottom: .5rem;
+                    }
+
+                    .recursos-cloudinary-file {
+                        font-size: 3rem;
+                        height: 100px;
+                        display: flex;
+                        align-items: center;
+                    }
+
+                    .recursos-cloudinary-name {
+                        font-size: .85rem;
+                        text-align: center;
+                        word-break: break-word;
+                    }
+                }
+            }
         }
     }
 }
