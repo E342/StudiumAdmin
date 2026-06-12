@@ -28,7 +28,7 @@
   gap: 1rem;
 
   @media (min-width: 640px)  { grid-template-columns: repeat(2, 1fr); }
-  @media (min-width: 1024px) { grid-template-columns: repeat(4, 1fr); }
+  @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
 }
 
 .statCard {
@@ -65,26 +65,17 @@
   svg { width: 1.5rem; height: 1.5rem; }
 }
 
-// Variantes de color
 .blue  { background-color: #eff6ff; color: #1d4ed8; .statIconWrapper { background-color: #dbeafe; } }
 .green { background-color: #ecfdf5; color: #059669; .statIconWrapper { background-color: #d1fae5; } }
-.red   { background-color: #fef2f2; color: #dc2626; .statIconWrapper { background-color: #fee2e2; } }
 .amber { background-color: #fffbeb; color: #d97706; .statIconWrapper { background-color: #fde68a; } }
 
-/* ---- Bottom grid ---- */
-.bottomGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-
-  @media (min-width: 1024px) { grid-template-columns: repeat(2, 1fr); }
-}
-
+/* ---- Info card ---- */
 .infoCard {
   background-color: $color-blanco;
   border-radius: 0.75rem;
   border: 1px solid $color-gris;
   padding: 1.5rem;
+  max-width: 28rem;
 }
 
 .infoCardTitle {
@@ -94,7 +85,6 @@
   margin: 0 0 1rem;
 }
 
-/* ---- Quick actions ---- */
 .quickActions {
   display: flex;
   flex-direction: column;
@@ -117,20 +107,3 @@
 
   &:hover { background-color: $color-gris; }
 }
-
-/* ---- Sys info ---- */
-.sysInfoList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin: 0;
-}
-
-.sysInfoRow {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.875rem;
-}
-
-.sysInfoKey { color: #6b7280; }
-.sysInfoVal { font-weight: 500; color: #111827; margin: 0; }

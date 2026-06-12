@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, UserCheck, UserX, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
-import Swal from 'sweetalert2';
+import { Search, Filter, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { TIPO_LABELS, ROLES, ROLE_TO_TIPO } from '../../constants/roles';
 import { GLOBAL } from '../../services/apiConfig';
@@ -10,7 +9,6 @@ import styles from '../../assets/styles/admin/UsersPage.module.scss';
 const API_URL = GLOBAL[0].BASE_URL;
 const PAGE_SIZE = 12;
 
-// Roles disponibles en el sistema para filtro
 const ROLE_OPTIONS = [
   { value: '', label: 'Todos los roles' },
   { value: ROLES.ESTUDIANTE, label: 'Estudiante' },
@@ -26,7 +24,6 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -44,7 +41,6 @@ export default function UsersPage() {
       let allUsers = await res.json();
       allUsers = Array.isArray(allUsers) ? allUsers : allUsers.users || [];
 
-      // Filtros en cliente (ya que el backend no los soporta aún)
       let filtered = allUsers;
 
       if (searchTerm) {
@@ -62,15 +58,8 @@ export default function UsersPage() {
         filtered = filtered.filter((u) => u.tipo === tipoTarget);
       }
 
-      if (statusFilter === 'active') {
-        filtered = filtered.filter((u) => u.activo !== false);
-      } else if (statusFilter === 'inactive') {
-        filtered = filtered.filter((u) => u.activo === false);
-      }
-
       setTotalCount(filtered.length);
 
-      // Paginación en cliente
       const start = (page - 1) * PAGE_SIZE;
       setUsers(filtered.slice(start, start + PAGE_SIZE));
     } catch (err) {
@@ -79,64 +68,19 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, roleFilter, statusFilter, page, getAuthHeaders]);
+  }, [searchTerm, roleFilter, page, getAuthHeaders]);
 
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
-  const toggleUserStatus = async (user) => {
-    const newStatus = !user.activo;
-    const nombreUsuario = user.nombre || user.email || user.correo || 'usuario';
-
-    const result = await Swal.fire({
-      icon: 'question',
-      title: newStatus ? 'Activar usuario' : 'Desactivar usuario',
-      text: newStatus
-        ? `Se activará la cuenta de ${nombreUsuario}.`
-        : `Se desactivará la cuenta de ${nombreUsuario}.`,
-      showCancelButton: true,
-      confirmButtonText: newStatus ? 'Activar' : 'Desactivar',
-      cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#1D3956',
-      cancelButtonColor: '#6b7280',
-      reverseButtons: true,
-      focusCancel: true,
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      const res = await fetch(`${API_URL}/user/${user._id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...getAuthHeaders(),
-        },
-        body: JSON.stringify({ activo: newStatus }),
-      });
-
-      if (!res.ok) throw new Error('Error al actualizar estado');
-      fetchUsers();
-    } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo actualizar el estado del usuario.',
-        confirmButtonColor: '#1D3956',
-      });
-    }
-  };
-
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   return (
     <div className={styles.page}>
       <div className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>Gestión de Usuarios</h1>
-        <p className={styles.pageSubtitle}>
-          Administra los perfiles, roles y estados de los usuarios
-        </p>
+        <h1 className={styles.pageTitle}>Usuarios</h1>
+        <p className={styles.pageSubtitle}>Lista de usuarios registrados en el sistema</p>
       </div>
 
       {/* Filtros */}
@@ -152,27 +96,16 @@ export default function UsersPage() {
               className={styles.searchInput}
             />
           </div>
-          <div className={styles.filtersGroup}>
-            <div className={styles.selectWrapper}>
-              <Filter />
-              <select
-                value={roleFilter}
-                onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
-                className={styles.select}
-              >
-                {ROLE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
+          <div className={styles.selectWrapper}>
+            <Filter />
             <select
-              value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-              className={styles.selectSimple}
+              value={roleFilter}
+              onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
+              className={styles.select}
             >
-              <option value="all">Todos</option>
-              <option value="active">Activos</option>
-              <option value="inactive">Inactivos</option>
+              {ROLE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -186,19 +119,17 @@ export default function UsersPage() {
               <tr>
                 <th>Usuario</th>
                 <th className={styles.hiddenSm}>Rol</th>
-                <th className={styles.hiddenMd}>Tipo</th>
-                <th>Estado</th>
                 <th className={styles.right}>Acciones</th>
               </tr>
             </thead>
             <tbody className={styles.tableBody}>
               {loading ? (
                 <tr>
-                  <td colSpan={5} className={styles.emptyCell}>Cargando...</td>
+                  <td colSpan={3} className={styles.emptyCell}>Cargando...</td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className={styles.emptyCell}>No se encontraron usuarios</td>
+                  <td colSpan={3} className={styles.emptyCell}>No se encontraron usuarios</td>
                 </tr>
               ) : (
                 users.map((user) => {
@@ -207,7 +138,6 @@ export default function UsersPage() {
                   const inicial = nombre.charAt(0).toUpperCase();
                   const tipo = user.tipo ?? 2;
                   const rolLabel = TIPO_LABELS[tipo] || 'Desconocido';
-                  const activo = user.activo !== false;
 
                   return (
                     <tr key={user._id}>
@@ -222,18 +152,6 @@ export default function UsersPage() {
                       </td>
                       <td className={styles.hiddenSm}>
                         <span className={styles.roleBadge}>{rolLabel}</span>
-                      </td>
-                      <td className={styles.hiddenMd}>{tipo}</td>
-                      <td>
-                        <button
-                          onClick={() => toggleUserStatus(user)}
-                          className={`${styles.statusBadge} ${activo ? styles.active : styles.inactive}`}
-                        >
-                          {activo
-                            ? <><UserCheck /> Activo</>
-                            : <><UserX /> Inactivo</>
-                          }
-                        </button>
                       </td>
                       <td className={styles.right}>
                         <button

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Users, Shield, UserCheck, UserX } from 'lucide-react';
+import { Users, UserCheck, UserX } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { GLOBAL } from '../../services/apiConfig';
 import styles from '../../assets/styles/admin/AdminDashboard.module.scss';
@@ -10,9 +10,8 @@ export default function AdminDashboard() {
   const { keycloak } = useAuth();
   const [stats, setStats] = useState({
     totalUsers: 0,
-    activeUsers: 0,
-    inactiveUsers: 0,
-    totalRoles: 3, // estudiante, tutor, administrador
+    students: 0,
+    tutors: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -30,9 +29,9 @@ export default function AdminDashboard() {
 
         setStats({
           totalUsers: usersArr.length,
-          activeUsers: usersArr.filter((u) => u.activo !== false).length,
-          inactiveUsers: usersArr.filter((u) => u.activo === false).length,
-          totalRoles: 3,
+          // tipo 2 → estudiante, tipo 3 → tutor
+          students: usersArr.filter((u) => u.tipo === 2).length,
+          tutors: usersArr.filter((u) => u.tipo === 3).length,
         });
       } catch (err) {
         console.error('[AdminDashboard] Error al cargar estadísticas:', err);
@@ -45,30 +44,9 @@ export default function AdminDashboard() {
   }, [keycloak]);
 
   const cards = [
-    {
-      label: 'Total Usuarios',
-      value: stats.totalUsers,
-      icon: Users,
-      variant: 'blue',
-    },
-    {
-      label: 'Usuarios Activos',
-      value: stats.activeUsers,
-      icon: UserCheck,
-      variant: 'green',
-    },
-    {
-      label: 'Usuarios Inactivos',
-      value: stats.inactiveUsers,
-      icon: UserX,
-      variant: 'red',
-    },
-    {
-      label: 'Roles',
-      value: stats.totalRoles,
-      icon: Shield,
-      variant: 'amber',
-    },
+    { label: 'Total Usuarios', value: stats.totalUsers, icon: Users, variant: 'blue' },
+    { label: 'Estudiantes', value: stats.students, icon: UserCheck, variant: 'green' },
+    { label: 'Tutores', value: stats.tutors, icon: UserX, variant: 'amber' },
   ];
 
   return (
@@ -92,37 +70,13 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      <div className={styles.bottomGrid}>
-        <div className={styles.infoCard}>
-          <h2 className={styles.infoCardTitle}>Acciones rápidas</h2>
-          <div className={styles.quickActions}>
-            <a href="/admin/users" className={styles.quickActionLink}>
-              <Users />
-              <span>Gestionar usuarios</span>
-            </a>
-            <a href="/admin/roles" className={styles.quickActionLink}>
-              <Shield />
-              <span>Ver roles del sistema</span>
-            </a>
-          </div>
-        </div>
-
-        <div className={styles.infoCard}>
-          <h2 className={styles.infoCardTitle}>Información del sistema</h2>
-          <dl className={styles.sysInfoList}>
-            <div className={styles.sysInfoRow}>
-              <dt className={styles.sysInfoKey}>Plataforma</dt>
-              <dd className={styles.sysInfoVal}>Studium</dd>
-            </div>
-            <div className={styles.sysInfoRow}>
-              <dt className={styles.sysInfoKey}>Autenticación</dt>
-              <dd className={styles.sysInfoVal}>Keycloak (OIDC)</dd>
-            </div>
-            <div className={styles.sysInfoRow}>
-              <dt className={styles.sysInfoKey}>Base de datos</dt>
-              <dd className={styles.sysInfoVal}>MongoDB (StudiumServer)</dd>
-            </div>
-          </dl>
+      <div className={styles.infoCard}>
+        <h2 className={styles.infoCardTitle}>Acciones rápidas</h2>
+        <div className={styles.quickActions}>
+          <a href="/admin/users" className={styles.quickActionLink}>
+            <Users />
+            <span>Ver lista de usuarios</span>
+          </a>
         </div>
       </div>
     </div>

@@ -1,19 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, User, Mail, Shield, Calendar } from 'lucide-react';
+import { ArrowLeft, Mail, Shield, Calendar, ArrowUpCircle } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useAuth } from '../../hooks/useAuth';
-import { TIPO_LABELS, ROLES, ROLE_TO_TIPO } from '../../constants/roles';
+import { TIPO_LABELS, ROLE_TO_TIPO, ROLES } from '../../constants/roles';
 import { GLOBAL } from '../../services/apiConfig';
 import styles from '../../assets/styles/admin/UserDetailPage.module.scss';
 
 const API_URL = GLOBAL[0].BASE_URL;
 
-const TIPO_OPTIONS = [
-  { value: ROLE_TO_TIPO[ROLES.ADMINISTRADOR], label: 'Administrador' },
-  { value: ROLE_TO_TIPO[ROLES.ESTUDIANTE], label: 'Estudiante' },
-  { value: ROLE_TO_TIPO[ROLES.TUTOR], label: 'Tutor' },
-];
+// Los únicos tipos que permiten el ascenso según el nuevo alcance
+const TIPO_ESTUDIANTE = ROLE_TO_TIPO[ROLES.ESTUDIANTE]; // 2
+const TIPO_TUTOR = ROLE_TO_TIPO[ROLES.TUTOR];           // 3
 
 export default function UserDetailPage() {
   const { id } = useParams();
@@ -22,12 +20,7 @@ export default function UserDetailPage() {
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-
-  // Campos editables
-  const [fullName, setFullName] = useState('');
-  const [tipo, setTipo] = useState(2);
-  const [activo, setActivo] = useState(true);
+  const [promoting, setPromoting] = useState(false);
 
   const getAuthHeaders = () => {
     const token = keycloak?.token;
@@ -36,64 +29,89 @@ export default function UserDetailPage() {
       : { 'Content-Type': 'application/json' };
   };
 
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch(`${API_URL}/user/profile/${id}`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('No encontrado');
+      const data = await res.json();
+      setProfile(data);
+    } catch (err) {
+      console.error('[UserDetailPage] Error:', err);
+      setProfile(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!id) return;
-
-    const fetchData = async () => {
-      try {
-        const res = await fetch(`${API_URL}/user/profile/${id}`, {
-          headers: getAuthHeaders(),
-        });
-        if (!res.ok) throw new Error('No encontrado');
-
-        const data = await res.json();
-        setProfile(data);
-        setFullName(data.nombre || '');
-        setTipo(data.tipo ?? 2);
-        setActivo(data.activo !== false);
-      } catch (err) {
-        console.error('[UserDetailPage] Error:', err);
-        setProfile(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const handleSave = async () => {
-    if (!id) return;
-    setSaving(true);
+  const handlePromote = async () => {
+    if (!profile || profile.tipo !== TIPO_ESTUDIANTE) return;
 
+    const nombre = profile.nombre || profile.email || profile.correo || 'este usuario';
+
+    const result = await Swal.fire({
+      icon: 'question',
+      title: 'Ascender a Tutor',
+      html: `
+        <p style="font-size:0.9375rem;line-height:1.6">
+          ¿Deseas ascender a <strong>${nombre}</strong> de
+          <em>Estudiante</em> a <em>Tutor</em>?
+        </p>
+        <p style="font-size:0.8125rem;color:#6b7280;margin-top:0.5rem">
+          Esta acción cambia el campo <code>tipo</code> de 2 a 3. No puede deshacerse desde este panel.
+        </p>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Sí, ascender',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#1D3956',
+      cancelButtonColor: '#6b7280',
+      reverseButtons: true,
+      focusCancel: true,
+    });
+
+    if (!result.isConfirmed) return;
+
+    setPromoting(true);
     try {
       const res = await fetch(`${API_URL}/user/${id}`, {
         method: 'PATCH',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ nombre: fullName, tipo, activo }),
+        body: JSON.stringify({ tipo: TIPO_TUTOR }),
       });
 
-      if (!res.ok) throw new Error('Error al guardar');
+      if (!res.ok) throw new Error('Error al actualizar');
 
-      Swal.fire({
+      await Swal.fire({
         icon: 'success',
-        title: 'Perfil actualizado',
-        text: 'Los cambios se guardaron correctamente.',
+        title: '¡Usuario ascendido!',
+        text: `${nombre} ahora es Tutor.`,
         confirmButtonColor: '#1D3956',
       });
-      navigate('/admin/users');
+
+      // Recargar el perfil para reflejar el cambio
+      setLoading(true);
+      await fetchProfile();
     } catch (err) {
       Swal.fire({
         icon: 'error',
-        title: 'Error al guardar',
-        text: 'No se pudieron actualizar los datos del usuario.',
+        title: 'Error',
+        text: 'No se pudo actualizar el rol del usuario.',
         confirmButtonColor: '#1D3956',
       });
     } finally {
-      setSaving(false);
+      setPromoting(false);
     }
   };
+
+  /* ---- Renderizado ---- */
 
   if (loading) {
     return <div className={styles.centerMsg}>Cargando perfil...</div>;
@@ -106,10 +124,13 @@ export default function UserDetailPage() {
   const nombre = profile.nombre || profile.email || profile.correo || 'Sin nombre';
   const email = profile.email || profile.correo || '';
   const inicial = nombre.charAt(0).toUpperCase();
-  const rolLabel = TIPO_LABELS[profile.tipo] || 'Desconocido';
+  const tipo = profile.tipo ?? 2;
+  const rolLabel = TIPO_LABELS[tipo] || 'Desconocido';
   const fechaRegistro = profile.createdAt
     ? new Date(profile.createdAt).toLocaleDateString('es-SV')
     : '—';
+
+  const canPromote = tipo === TIPO_ESTUDIANTE;
 
   return (
     <div className={styles.page}>
@@ -135,84 +156,50 @@ export default function UserDetailPage() {
               <span>Registrado: {fechaRegistro}</span>
             </div>
             <div className={styles.profileMetaItem}>
+              <Mail />
+              <span>{email || '—'}</span>
+            </div>
+            <div className={styles.profileMetaItem}>
               <Shield />
-              <span>Rol actual: {rolLabel}</span>
+              <span>
+                Rol actual:{' '}
+                <strong className={styles.rolHighlight}>{rolLabel}</strong>
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Formulario de edición */}
-        <div className={styles.editCard}>
-          <h2 className={styles.editTitle}>Editar perfil</h2>
+        {/* Acción de ascenso */}
+        <div className={styles.actionCard}>
+          <h2 className={styles.actionTitle}>Gestión de rol</h2>
 
-          <div className={styles.formFields}>
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <User />
-                Nombre completo
-              </label>
-              <input
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className={styles.input}
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <Mail />
-                Correo electrónico
-              </label>
-              <input
-                type="email"
-                value={email}
-                disabled
-                className={styles.input}
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.label}>
-                <Shield />
-                Tipo de usuario
-              </label>
-              <select
-                value={tipo}
-                onChange={(e) => setTipo(Number(e.target.value))}
-                className={styles.select}
-              >
-                {TIPO_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className={styles.toggleRow}>
-              <span className={styles.toggleLabel}>Estado de la cuenta</span>
+          {canPromote ? (
+            <div className={styles.promoteBox}>
+              <div className={styles.promoteInfo}>
+                <ArrowUpCircle className={styles.promoteIcon} />
+                <div>
+                  <p className={styles.promoteLabel}>Ascender a Tutor</p>
+                  <p className={styles.promoteDesc}>
+                    Este usuario es actualmente <strong>Estudiante</strong>. Puedes
+                    ascenderlo a <strong>Tutor</strong> si corresponde.
+                  </p>
+                </div>
+              </div>
               <button
-                type="button"
-                onClick={() => setActivo(!activo)}
-                className={`${styles.toggle} ${activo ? styles.on : styles.off}`}
+                onClick={handlePromote}
+                disabled={promoting}
+                className={styles.promoteBtn}
               >
-                <span className={styles.toggleKnob} />
-              </button>
-              <span className={styles.toggleStatusText}>
-                {activo ? 'Activo' : 'Inactivo'}
-              </span>
-            </div>
-
-            <div className={styles.formFooter}>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className={styles.saveBtn}
-              >
-                <Save />
-                {saving ? 'Guardando...' : 'Guardar cambios'}
+                {promoting ? 'Procesando...' : 'Ascender a Tutor'}
               </button>
             </div>
-          </div>
+          ) : (
+            <p className={styles.noActionMsg}>
+              {tipo === TIPO_TUTOR
+                ? 'Este usuario ya es Tutor. No hay ascenso disponible.'
+                : 'El ascenso Estudiante → Tutor solo aplica a usuarios con rol Estudiante.'}
+            </p>
+          )}
         </div>
       </div>
     </div>
