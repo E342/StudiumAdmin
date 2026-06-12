@@ -51,27 +51,10 @@ div.HeaderRecursos{
         button{
             @include boton-generico;
             display: flex;
-            align-items: center;
-            gap: .35rem;
             margin-left: auto;
             margin-top: auto;
             margin-bottom: 1rem;
             font-size: large;
-
-            &:disabled {
-                cursor: not-allowed;
-                opacity: .8;
-            }
-
-            &.solicitud-pendiente {
-                background-color: $color-gris;
-                color: $color-azul;
-
-                &:hover {
-                    background-color: $color-gris;
-                    color: $color-azul;
-                }
-            }
         }
     }
 }

@@ -27,13 +27,7 @@ export const ModalAgregarRecurso = ({ idCurso, closeModal, onSubmit, defaultValu
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const token = localStorage.getItem('TOKEN');
-            const response = await axios.post(`${API_URL}/course/resources/${idCurso}`, formState, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            const response = await axios.post(`${API_URL}/course/resources/${idCurso}`, formState);
             if (response.status === 200 || response.status === 201) {
                 console.log("Información enviada correctamente:", response.data);
                 onSubmit(formState);

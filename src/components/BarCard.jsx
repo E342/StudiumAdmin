@@ -35,10 +35,7 @@ const BarCard = ({ id, titulo, textContent, owner, id_curso }) => {
         if (!confirmed) return;
 
         try {
-            const token = localStorage.getItem('TOKEN');
-            const response = await axios.delete(`${API_URL}/course/${id_curso}/resource/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const response = await axios.delete(`${API_URL}/course/${id_curso}/resource/${id}`);
             console.log(response.data);
             await showSuccess({
                 title: 'Recurso eliminado',

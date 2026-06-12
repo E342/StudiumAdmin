@@ -8,7 +8,6 @@ import * as FaIcons from "react-icons/fa";
 import * as AiIcons from "react-icons/ai";
 import * as GiIcons from "react-icons/gi";
 import { sidebarMenuItems } from "./SidebarMenuItems"
-import { obtenerRolActual, etiquetaRol } from "../utils/roles";
 import { showConfirm } from '../utils/alerts';
 import { useKeycloak } from '../services/KeycloakProvider';
 
@@ -30,9 +29,6 @@ function AppHeader() {
         if (!confirmed) return;
 
         localStorage.clear();
-        // Notifica a App para que limpie el rol/usuario en memoria y los guards
-        // de rutas reaccionen de inmediato (sin recargar).
-        window.dispatchEvent(new Event('auth-change'));
 
         // Cuando la sesión se abrió vía Keycloak también debemos invalidarla
         // en el servidor de identidad: el adaptador hace la redirección al
@@ -55,11 +51,6 @@ function AppHeader() {
     const redirectLogo = () => {
         navigate('/home');
     };
-
-    const rolActual = obtenerRolActual();
-    const itemsVisibles = sidebarMenuItems.filter(
-        (item) => !item.roles || item.roles.includes(rolActual)
-    );
 
     const toggleSidebar = () => {
         setSidebarVisible(!sidebarVisible);
@@ -105,7 +96,7 @@ function AppHeader() {
                                     <AiIcons.AiOutlineClose />
                                 </Link>
                             </li>
-                            {itemsVisibles.map((item, index) => (
+                            {sidebarMenuItems.map((item, index) => (
                                 <li key={index} className={item.cName}>
                                     <Link to={item.path}>
                                         <div className="icon">{item.icon}</div>
@@ -113,10 +104,6 @@ function AppHeader() {
                                     </Link>
                                 </li>
                             ))}
-                            <li className="role-badge-item">
-                                <span className="role-badge-label">Rol</span>
-                                <span className="role-badge-value">{etiquetaRol(rolActual)}</span>
-                            </li>
                         </ul>
                     </nav>
                 </div>

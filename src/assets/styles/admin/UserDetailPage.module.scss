@@ -1,0 +1,251 @@
+@import '../variables';
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.centerMsg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 16rem;
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+
+  svg { width: 1rem; height: 1rem; }
+
+  &:hover { color: #111827; }
+}
+
+.formWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 42rem;
+}
+
+/* ---- Profile card ---- */
+.profileCard {
+  background-color: $color-blanco;
+  border-radius: 0.75rem;
+  border: 1px solid $color-gris;
+  padding: 1.5rem;
+}
+
+.profileTop {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.profileAvatar {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background-color: $color-rosa;
+  color: $color-azul;
+  font-weight: 700;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profileName {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.25rem;
+}
+
+.profileEmail {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.profileMeta {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+
+  @media (min-width: 640px) { grid-template-columns: repeat(2, 1fr); }
+}
+
+.profileMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+}
+
+/* ---- Edit card ---- */
+.editCard {
+  background-color: $color-blanco;
+  border-radius: 0.75rem;
+  border: 1px solid $color-gris;
+  padding: 1.5rem;
+}
+
+.editTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 1rem;
+}
+
+.formFields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+
+  svg { width: 0.875rem; height: 0.875rem; }
+}
+
+.input {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: box-shadow 0.15s;
+
+  &:focus {
+    box-shadow: 0 0 0 2px $color-rosa;
+    border-color: transparent;
+  }
+
+  &:disabled {
+    background-color: #f9fafb;
+    color: #6b7280;
+    cursor: not-allowed;
+  }
+}
+
+.select {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  outline: none;
+  appearance: none;
+  background-color: $color-blanco;
+  cursor: pointer;
+  box-sizing: border-box;
+
+  &:focus {
+    box-shadow: 0 0 0 2px $color-rosa;
+    border-color: transparent;
+  }
+}
+
+/* ---- Toggle ---- */
+.toggleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.toggleLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.toggle {
+  position: relative;
+  display: inline-flex;
+  height: 1.5rem;
+  width: 2.75rem;
+  align-items: center;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.on  { background-color: #059669; }
+.off { background-color: #d1d5db; }
+
+.toggleKnob {
+  position: absolute;
+  display: block;
+  height: 1rem;
+  width: 1rem;
+  border-radius: 50%;
+  background-color: $color-blanco;
+  transition: transform 0.2s;
+
+  .on &  { transform: translateX(1.5rem); }
+  .off & { transform: translateX(0.25rem); }
+}
+
+.toggleStatusText {
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+/* ---- Footer ---- */
+.formFooter {
+  padding-top: 1rem;
+  border-top: 1px solid $color-gris;
+}
+
+.saveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: $color-azul;
+  color: $color-blanco;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  svg { width: 1rem; height: 1rem; }
+
+  &:hover:not(:disabled) { background-color: darken($color-azul, 8%); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}

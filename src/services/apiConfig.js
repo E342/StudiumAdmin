@@ -15,7 +15,6 @@
 export const GLOBAL = [
     {
         BASE_URL: import.meta.env.VITE_API_URL,
-        API_TARGET: import.meta.env.VITE_API_TARGET || 'http://localhost:3000',
         KEYCLOAK_URL: import.meta.env.VITE_KEYCLOAK_URL || '',
         KEYCLOAK_REALM: import.meta.env.VITE_KEYCLOAK_REALM || '',
         KEYCLOAK_CLIENT_ID: import.meta.env.VITE_KEYCLOAK_CLIENT_ID || '',

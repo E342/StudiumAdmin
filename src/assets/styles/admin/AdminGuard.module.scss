@@ -1,0 +1,34 @@
+@import '../variables';
+
+.guardWrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $color-bg;
+}
+
+.guardInner {
+  text-align: center;
+}
+
+.spinner {
+  display: block;
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid $color-azul;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 0 auto 0.75rem;
+}
+
+.guardText {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
