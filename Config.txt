@@ -46,7 +46,7 @@ Busca y selecciona Microsoft
 
 Completar los siguientes campos con esos valores
 Client ID: fe55a664-9def-4f53-944f-5b30560ae7a7
-Client Secret:[NO INCLUIR EN EL REPOSITORIO]
+Client Secret: [NO INCLUIR EN EL REPOSITORIO]
 
 7. Probar el login del proyecto (desde vs code)
 
