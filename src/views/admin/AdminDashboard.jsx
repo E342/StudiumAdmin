@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Users, UserCheck, UserX } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { GLOBAL } from '../../services/apiConfig';
+import { isMockEnabled, mockFetchUsers } from '../../mocks/mockApi';
 import styles from '../../assets/styles/admin/AdminDashboard.module.scss';
 
 const API_URL = GLOBAL[0].BASE_URL;
@@ -18,14 +19,20 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const token = keycloak?.token;
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        let usersArr;
 
-        const res = await fetch(`${API_URL}/user`, { headers });
-        if (!res.ok) throw new Error('Error al obtener usuarios');
+        if (isMockEnabled) {
+          usersArr = await mockFetchUsers();
+        } else {
+          const token = keycloak?.token;
+          const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-        const users = await res.json();
-        const usersArr = Array.isArray(users) ? users : users.users || [];
+          const res = await fetch(`${API_URL}/user`, { headers });
+          if (!res.ok) throw new Error('Error al obtener usuarios');
+
+          const users = await res.json();
+          usersArr = Array.isArray(users) ? users : users.users || [];
+        }
 
         setStats({
           totalUsers: usersArr.length,

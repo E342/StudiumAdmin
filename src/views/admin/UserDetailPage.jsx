@@ -5,6 +5,7 @@ import Swal from 'sweetalert2';
 import { useAuth } from '../../hooks/useAuth';
 import { TIPO_LABELS, ROLE_TO_TIPO, ROLES } from '../../constants/roles';
 import { GLOBAL } from '../../services/apiConfig';
+import { isMockEnabled, mockFetchUserById, mockPatchUser } from '../../mocks/mockApi';
 import styles from '../../assets/styles/admin/UserDetailPage.module.scss';
 
 const API_URL = GLOBAL[0].BASE_URL;
@@ -31,11 +32,16 @@ export default function UserDetailPage() {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch(`${API_URL}/user/profile/${id}`, {
-        headers: getAuthHeaders(),
-      });
-      if (!res.ok) throw new Error('No encontrado');
-      const data = await res.json();
+      let data;
+      if (isMockEnabled) {
+        data = await mockFetchUserById(id);
+      } else {
+        const res = await fetch(`${API_URL}/user/profile/${id}`, {
+          headers: getAuthHeaders(),
+        });
+        if (!res.ok) throw new Error('No encontrado');
+        data = await res.json();
+      }
       setProfile(data);
     } catch (err) {
       console.error('[UserDetailPage] Error:', err);
@@ -81,13 +87,17 @@ export default function UserDetailPage() {
 
     setPromoting(true);
     try {
-      const res = await fetch(`${API_URL}/user/${id}`, {
-        method: 'PATCH',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ tipo: TIPO_TUTOR }),
-      });
+      if (isMockEnabled) {
+        await mockPatchUser(id, { tipo: TIPO_TUTOR });
+      } else {
+        const res = await fetch(`${API_URL}/user/${id}`, {
+          method: 'PATCH',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ tipo: TIPO_TUTOR }),
+        });
 
-      if (!res.ok) throw new Error('Error al actualizar');
+        if (!res.ok) throw new Error('Error al actualizar');
+      }
 
       await Swal.fire({
         icon: 'success',

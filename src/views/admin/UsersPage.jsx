@@ -4,6 +4,7 @@ import { Search, Filter, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { TIPO_LABELS, ROLES, ROLE_TO_TIPO } from '../../constants/roles';
 import { GLOBAL } from '../../services/apiConfig';
+import { isMockEnabled, mockFetchUsers } from '../../mocks/mockApi';
 import styles from '../../assets/styles/admin/UsersPage.module.scss';
 
 const API_URL = GLOBAL[0].BASE_URL;
@@ -35,11 +36,16 @@ export default function UsersPage() {
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/user`, { headers: getAuthHeaders() });
-      if (!res.ok) throw new Error('Error al obtener usuarios');
+      let allUsers;
 
-      let allUsers = await res.json();
-      allUsers = Array.isArray(allUsers) ? allUsers : allUsers.users || [];
+      if (isMockEnabled) {
+        allUsers = await mockFetchUsers();
+      } else {
+        const res = await fetch(`${API_URL}/user`, { headers: getAuthHeaders() });
+        if (!res.ok) throw new Error('Error al obtener usuarios');
+        const data = await res.json();
+        allUsers = Array.isArray(data) ? data : data.users || [];
+      }
 
       let filtered = allUsers;
 
