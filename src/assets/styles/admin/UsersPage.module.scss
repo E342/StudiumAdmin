@@ -72,11 +72,6 @@
   }
 }
 
-.filtersGroup {
-  display: flex;
-  gap: 0.75rem;
-}
-
 .selectWrapper {
   position: relative;
 
@@ -94,22 +89,6 @@
 
 .select {
   padding: 0.5rem 1rem 0.5rem 2.25rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  outline: none;
-  appearance: none;
-  background-color: $color-blanco;
-  cursor: pointer;
-
-  &:focus {
-    box-shadow: 0 0 0 2px $color-rosa;
-    border-color: transparent;
-  }
-}
-
-.selectSimple {
-  padding: 0.5rem 1rem;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
   font-size: 0.875rem;
@@ -165,7 +144,6 @@
 }
 
 .hiddenSm { @media (max-width: 639px) { display: none; } }
-.hiddenMd { @media (max-width: 767px) { display: none; } }
 .right    { text-align: right; }
 
 .emptyCell {
@@ -202,7 +180,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   margin: 0;
-  max-width: 12rem;
+  max-width: 16rem;
 }
 
 .userEmail {
@@ -212,14 +190,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   margin: 0;
-  max-width: 12rem;
+  max-width: 16rem;
 }
 
-/* ---- Badges ---- */
+/* ---- Role badge ---- */
 .roleBadge {
   display: inline-flex;
   align-items: center;
-  padding: 0.125rem 0.625rem;
+  padding: 0.2rem 0.625rem;
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 500;
@@ -227,25 +205,7 @@
   color: #1d4ed8;
 }
 
-.statusBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.2rem 0.625rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.15s;
-
-  svg { width: 0.75rem; height: 0.75rem; }
-}
-
-.active   { background-color: #ecfdf5; color: #059669; &:hover { background-color: #d1fae5; } }
-.inactive { background-color: #fef2f2; color: #dc2626; &:hover { background-color: #fee2e2; } }
-
-/* ---- View btn ---- */
+/* ---- View button ---- */
 .viewBtn {
   display: inline-flex;
   align-items: center;
