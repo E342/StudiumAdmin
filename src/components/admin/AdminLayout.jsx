@@ -14,7 +14,6 @@ import styles from '../../assets/styles/admin/AdminLayout.module.scss';
 const navItems = [
   { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/admin/users', icon: Users, label: 'Usuarios' },
-  { to: '/admin/roles', icon: Shield, label: 'Roles y Permisos' },
 ];
 
 export default function AdminLayout() {
