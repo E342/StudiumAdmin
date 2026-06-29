@@ -22,6 +22,7 @@ import AdminLogin from './views/admin/AdminLogin';
 import AdminDashboard from './views/admin/AdminDashboard';
 import UsersPage from './views/admin/UsersPage';
 import UserDetailPage from './views/admin/UserDetailPage';
+import AdminProfilePage from './views/admin/AdminProfilePage';
 
 import { GLOBAL } from './services/apiConfig';
 
@@ -105,6 +106,7 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="users/:id" element={<UserDetailPage />} />
+          <Route path="perfil" element={<AdminProfilePage />} />
         </Route>
 
         {/* Fallback */}

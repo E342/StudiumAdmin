@@ -1,215 +1,171 @@
 @import '../variables';
+@import '../mixins';
 
 .adminLayout {
-  display: flex;
-  height: 100vh;
+  min-height: 100vh;
   background-color: $color-bg;
-  overflow: hidden;
-}
-
-/* ---- Overlay móvil ---- */
-.overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.4);
-  z-index: 30;
-
-  @media (min-width: 1024px) { display: none; }
-}
-
-/* ---- Sidebar ---- */
-.sidebar {
-  position: fixed;
-  inset-y: 0;
-  left: 0;
-  z-index: 40;
-  width: 16rem;
-  background-color: $color-azul;
-  color: $color-blanco;
-  transform: translateX(-100%);
-  transition: transform 0.2s ease-in-out;
   display: flex;
   flex-direction: column;
-
-  @media (min-width: 1024px) {
-    position: static;
-    transform: translateX(0);
-    flex-shrink: 0;
-  }
 }
 
-.open { transform: translateX(0); }
-
-.sidebarHeader {
+/* ---- Navbar superior azul (igual que el home) ---- */
+.topBar {
+  background-color: $color-azul;
+  margin: -8px -8px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 4rem;
-  padding: 0 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
 }
 
-.sidebarBrand {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.125rem;
-  font-weight: 700;
-
-  svg { color: $color-rosa; width: 1.75rem; height: 1.75rem; }
-}
-
-.sidebarCloseBtn {
-  background: none;
-  border: none;
-  color: rgba(255,255,255,0.7);
+.hamburguer {
+  font-size: 40px;
+  width: 2.2rem;
+  height: 2.2rem;
+  margin-top: 15px;
+  margin-left: 50px;
+  color: $color-bg;
   cursor: pointer;
-  padding: 0.25rem;
-  display: flex;
-  align-items: center;
 
-  &:hover { color: $color-blanco; }
-
-  @media (min-width: 1024px) { display: none; }
-}
-
-/* ---- Nav ---- */
-.sidebarNav {
-  flex: 1;
-  padding: 1.25rem 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  overflow-y: auto;
-}
-
-.navLink {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.625rem 0.75rem;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-decoration: none;
-  color: rgba(255,255,255,0.7);
-  transition: background-color 0.15s, color 0.15s;
-
-  svg { width: 1.25rem; height: 1.25rem; flex-shrink: 0; }
-
-  &:hover {
-    background-color: rgba(255,255,255,0.1);
-    color: $color-blanco;
+  @media (max-width: 600px) {
+    margin-left: 1rem;
   }
 }
 
-.active {
-  background-color: rgba(255,255,255,0.15);
-  color: $color-blanco;
-}
-
-/* ---- Footer ---- */
-.sidebarFooter {
-  padding: 0.75rem;
-  border-top: 1px solid rgba(255,255,255,0.1);
-  flex-shrink: 0;
-}
-
-.logoutBtn {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 0.625rem 0.75rem;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: rgba(255,255,255,0.7);
-  background: none;
-  border: none;
+.logo {
+  height: 4.5rem;
+  width: 120px;
+  margin-right: 200px;
+  margin-left: 20px;
   cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
+  object-fit: contain;
 
-  svg { width: 1.25rem; height: 1.25rem; }
-
-  &:hover {
-    background-color: rgba(239,68,68,0.2);
-    color: #fca5a5;
+  @media (max-width: 600px) {
+    margin-right: 1rem;
   }
 }
 
-/* ---- Main ---- */
-.mainContent {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.topBar {
-  height: 4rem;
+.fondoSalida {
   background-color: $color-blanco;
-  border-bottom: 1px solid $color-gris;
+  border-radius: 50%;
   display: flex;
-  align-items: center;
-  padding: 0 1rem;
-  gap: 1rem;
-  flex-shrink: 0;
-
-  @media (min-width: 1024px) { padding: 0 1.5rem; }
+  width: 3rem;
+  height: 3rem;
+  margin-top: 10px;
+  margin-right: 20px;
 }
 
-.menuToggleBtn {
+.salida {
+  height: 1.6rem;
+  margin-top: 10px;
+  margin-left: 12px;
+  cursor: pointer;
+}
+
+/* ---- Sidebar rosado deslizable (igual que el home) ---- */
+.sidebarWrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
+
+.navMenu {
+  background-color: $color-rosa;
+  width: 200px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  position: fixed;
+  top: 0;
+  left: -100%;
+  transition: 850ms;
+  pointer-events: auto;
+  @include box-shadow-style(4px, 0px, 12px, 0px, rgba(0, 0, 0, 0.2));
+
+  &.active {
+    left: 0;
+    transition: 450ms;
+  }
+}
+
+.navMenuItems {
+  width: 100%;
+  list-style: none;
+}
+
+.navbarToggle {
+  background-color: $color-rosa;
+  width: 100%;
+  height: 3rem;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-right: 1rem;
+}
+
+.closeBtn {
   background: none;
   border: none;
-  color: #4b5563;
+  color: $color-azul;
   cursor: pointer;
   display: flex;
   align-items: center;
 
   svg { width: 1.5rem; height: 1.5rem; }
-
-  &:hover { color: #111827; }
-
-  @media (min-width: 1024px) { display: none; }
 }
 
-.topBarSpacer { flex: 1; }
+.navText {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  list-style: none;
+  margin-bottom: 0.5rem;
+}
 
-.userBadge {
+.navLink,
+.navLinkActive {
+  text-decoration: none;
+  color: $color-azul;
+  font-size: 0.9rem;
+  font-weight: 500;
+  width: 85%;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+
+  &:hover {
+    background-color: $color-blanco;
+  }
 }
 
-.userAvatar {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  background-color: $color-rosa;
-  color: $color-azul;
+.navLinkActive {
+  background-color: $color-blanco;
   font-weight: 700;
-  font-size: 0.875rem;
+}
+
+.icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+
+  svg { width: 1.5rem; height: 1.5rem; color: $color-azul; }
 }
 
-.userName {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
-
-  @media (max-width: 639px) { display: none; }
+.opc {
+  white-space: nowrap;
 }
 
+/* ---- Contenido principal ---- */
 .pageContent {
   flex: 1;
-  overflow-y: auto;
-  padding: 1.25rem;
+  padding: 1.5rem;
 
-  @media (min-width: 1024px) { padding: 1.5rem; }
+  @media (max-width: 600px) {
+    padding: 1rem;
+  }
 }

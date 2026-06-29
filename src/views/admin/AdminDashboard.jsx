@@ -51,9 +51,9 @@ export default function AdminDashboard() {
   }, [keycloak]);
 
   const cards = [
-    { label: 'Total Usuarios', value: stats.totalUsers, icon: Users, variant: 'blue' },
-    { label: 'Estudiantes', value: stats.students, icon: UserCheck, variant: 'green' },
-    { label: 'Tutores', value: stats.tutors, icon: UserX, variant: 'amber' },
+    { label: 'Total Usuarios', value: stats.totalUsers, icon: Users },
+    { label: 'Estudiantes', value: stats.students, icon: UserCheck },
+    { label: 'Tutores', value: stats.tutors, icon: UserX },
   ];
 
   return (
@@ -65,7 +65,7 @@ export default function AdminDashboard() {
 
       <div className={styles.statsGrid}>
         {cards.map((card) => (
-          <div key={card.label} className={`${styles.statCard} ${styles[card.variant]}`}>
+          <div key={card.label} className={styles.statCard}>
             <div>
               <p className={styles.statLabel}>{card.label}</p>
               <p className={styles.statValue}>{loading ? '...' : card.value}</p>
