@@ -1,4 +1,5 @@
 @import '../variables';
+@import '../mixins';
 
 .page {
   display: flex;
@@ -11,7 +12,7 @@
 .pageTitle {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
+  color: $color-azul;
   margin: 0 0 0.25rem;
 }
 
@@ -25,8 +26,8 @@
 .filtersCard {
   background-color: $color-blanco;
   border-radius: 0.75rem;
-  border: 1px solid $color-gris;
   padding: 1rem;
+  @include box-shadow-style;
 }
 
 .filtersRow {
@@ -107,8 +108,8 @@
 .tableCard {
   background-color: $color-blanco;
   border-radius: 0.75rem;
-  border: 1px solid $color-gris;
   overflow: hidden;
+  @include box-shadow-style;
 }
 
 .tableWrapper { overflow-x: auto; }
@@ -120,14 +121,13 @@
 }
 
 .tableHead {
-  background-color: #f9fafb;
-  border-bottom: 1px solid $color-gris;
+  background-color: $color-azul;
 
   th {
     padding: 0.75rem 1rem;
     text-align: left;
     font-weight: 600;
-    color: #6b7280;
+    color: $color-blanco;
   }
 }
 
@@ -137,7 +137,7 @@
     transition: background-color 0.1s;
 
     &:last-child { border-bottom: none; }
-    &:hover { background-color: #f9fafb; }
+    &:hover { background-color: $color-bg; }
 
     td { padding: 0.75rem 1rem; }
   }
@@ -175,7 +175,7 @@
 
 .userName {
   font-weight: 500;
-  color: #111827;
+  color: $color-azul;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -201,31 +201,22 @@
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 500;
-  background-color: #eff6ff;
-  color: #1d4ed8;
+  background-color: $color-rosa;
+  color: $color-azul;
 }
 
 /* ---- View button ---- */
 .viewBtn {
+  @include boton-generico;
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.5rem;
   font-size: 0.75rem;
-  font-weight: 500;
-  color: $color-azul;
-  background-color: #f3f4f6;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.15s;
 
   svg { width: 0.875rem; height: 0.875rem; }
-
-  &:hover { background-color: #e5e7eb; }
 }
 
-/* ---- Pagination ---- */
+/* ---- Pagination (igual estilo que el home) ---- */
 .pagination {
   display: flex;
   align-items: center;
@@ -247,24 +238,23 @@
 }
 
 .pageBtn {
-  padding: 0.375rem;
-  border-radius: 0.5rem;
-  border: 1px solid #d1d5db;
-  color: #4b5563;
-  background: $color-blanco;
-  cursor: pointer;
+  @include boton-generico;
   display: flex;
   align-items: center;
-  transition: background-color 0.15s;
+  margin: 0;
 
   svg { width: 1rem; height: 1rem; }
 
-  &:hover:not(:disabled) { background-color: #f9fafb; }
-  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: $color-rosa;
+    color: $color-azul;
+  }
 }
 
 .pageInfo {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: $color-azul;
 }

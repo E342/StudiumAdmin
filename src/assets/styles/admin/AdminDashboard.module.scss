@@ -1,4 +1,5 @@
 @import '../variables';
+@import '../mixins';
 
 .dashboard {
   display: flex;
@@ -11,7 +12,7 @@
 .pageTitle {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
+  color: $color-azul;
   margin: 0 0 0.25rem;
 }
 
@@ -25,19 +26,21 @@
 .statsGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
+  gap: 1.25rem;
 
   @media (min-width: 640px)  { grid-template-columns: repeat(2, 1fr); }
   @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
 }
 
 .statCard {
+  background-color: $color-blanco;
   border-radius: 0.75rem;
   padding: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   transition: transform 0.15s;
+  @include box-shadow-style;
 
   &:hover { transform: scale(1.02); }
 }
@@ -45,13 +48,14 @@
 .statLabel {
   font-size: 0.875rem;
   font-weight: 500;
-  opacity: 0.8;
+  color: #6b7280;
   margin: 0 0 0.25rem;
 }
 
 .statValue {
   font-size: 1.875rem;
   font-weight: 700;
+  color: $color-azul;
   margin: 0;
 }
 
@@ -61,27 +65,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: $color-rosa;
 
-  svg { width: 1.5rem; height: 1.5rem; }
+  svg { width: 1.5rem; height: 1.5rem; color: $color-azul; }
 }
-
-.blue  { background-color: #eff6ff; color: #1d4ed8; .statIconWrapper { background-color: #dbeafe; } }
-.green { background-color: #ecfdf5; color: #059669; .statIconWrapper { background-color: #d1fae5; } }
-.amber { background-color: #fffbeb; color: #d97706; .statIconWrapper { background-color: #fde68a; } }
 
 /* ---- Info card ---- */
 .infoCard {
   background-color: $color-blanco;
   border-radius: 0.75rem;
-  border: 1px solid $color-gris;
   padding: 1.5rem;
   max-width: 28rem;
+  @include box-shadow-style;
 }
 
 .infoCardTitle {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
+  color: $color-azul;
   margin: 0 0 1rem;
 }
 
@@ -97,13 +98,14 @@
   gap: 0.75rem;
   padding: 0.75rem;
   border-radius: 0.5rem;
-  background-color: #f9fafb;
+  background-color: $color-bg;
   text-decoration: none;
   font-size: 0.875rem;
-  color: #374151;
+  color: $color-azul;
+  font-weight: 500;
   transition: background-color 0.15s;
 
   svg { width: 1.25rem; height: 1.25rem; color: $color-azul; flex-shrink: 0; }
 
-  &:hover { background-color: $color-gris; }
+  &:hover { background-color: $color-rosa; }
 }
