@@ -40,7 +40,13 @@ const validateForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.patch(`${API_URL}/course/${idCurso}/resource/${idRecurso}`, formState);
+            const token = localStorage.getItem('TOKEN');
+            const response = await axios.patch(`${API_URL}/course/${idCurso}/resource/${idRecurso}`, formState, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
 
             console.log("Response from server:", response);
 

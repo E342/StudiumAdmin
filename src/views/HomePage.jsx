@@ -5,7 +5,8 @@ import axios from 'axios';
 import { GLOBAL } from '../services/apiConfig';
 
 function HomePage() {
-    const API_URL = GLOBAL.map((e) => e.BASE_URL)[0]; 
+    const API_URL = GLOBAL.map((e) => e.BASE_URL)[0];
+    const userId = localStorage.getItem('ID');
     const [courses, setCourses] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const limit = 8; // Límite de cursos por página
@@ -34,7 +35,9 @@ function HomePage() {
         <div className='center'>
             <h1>CIRCULOS DE ESTUDIO</h1>
             <div className='cards-container'>
-                {courses.courses && courses.courses.map(curso => (
+                {courses.courses && courses.courses
+                    .filter(curso => String(curso.id_tutor) !== String(userId))
+                    .map(curso => (
                     <CourseCard key={curso._id} titulo={curso.nombre} tutor={curso.nombre_tutor} id={curso._id} f_fin={curso.fecha_fin} f_inicio={curso.fecha_inicio} img={curso.imagen} h_inicio={curso.horario} h_fin={""} materia={curso.materia}></CourseCard>
                 ))}
             </div>

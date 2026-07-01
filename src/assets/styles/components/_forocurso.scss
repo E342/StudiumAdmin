@@ -1,0 +1,470 @@
+// ─── _foroCurso.scss ───────────────────────────────────────────────────────
+// Paleta Studium
+$azul-dark:   #4c689c;
+$azul-mid:    #e8edf5;
+$azul-border: #b5c4d9;
+$rosa:        #d4537e;
+$rosa-hover:  #b83d65;
+$gris-bg:     #f4f4f4;
+$gris-borde:  #e0e0e0;
+
+// Mensajes ajenos (estudiante)
+$student-bg:  #f0f0f0;
+$student-text: #222;
+
+// ─── Layout principal ──────────────────────────────────────────────────────
+.foro-main-container {
+  display: flex;
+  height: calc(100vh - 70px); // ajusta al alto de tu navbar
+  background: $gris-bg;
+  font-family: inherit;
+  overflow: visible;
+}
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────
+.foro-sidebar {
+  width: 270px;
+  min-width: 270px;
+  background: #fff;
+  border-right: 1px solid $gris-borde;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.foro-sidebar-header {
+  background: $azul-dark;
+  color: #fff;
+  padding: 16px;
+  flex-shrink: 0;
+
+  .foro-course-label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    opacity: 0.6;
+    margin-bottom: 4px;
+  }
+
+  .foro-course-title {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.35;
+    margin: 0 0 8px 0;
+  }
+
+  .foro-tutor-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.85);
+  }
+}
+
+.foro-threads-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #999;
+  padding: 12px 16px 4px;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.foro-thread-list {
+  list-style: none;
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  margin: 0;
+}
+
+.foro-thread-item {
+  position: relative;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: background 0.15s;
+
+  &:hover {
+    background: $gris-bg;
+  }
+
+  &.active {
+    border-left-color: $rosa;
+    background: #fdf2f5;
+  }
+
+  .foro-unread-dot {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $rosa;
+  }
+
+  .foro-thread-title {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #222;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 3px;
+    padding-right: 16px;
+  }
+
+  .foro-thread-meta {
+    display: block;
+    font-size: 11px;
+    color: #999;
+  }
+}
+
+.foro-new-thread-btn {
+  margin: 12px;
+  padding: 9px;
+  background: $rosa;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+
+  &:hover { background: $rosa-hover; }
+}
+
+// ─── Área de chat ──────────────────────────────────────────────────────────
+.foro-chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #fff;
+}
+
+.foro-chat-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid $gris-borde;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+
+  .foro-chat-header-icon {
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  .foro-chat-header-info {
+    display: flex;
+    flex-direction: column;
+
+    .foro-chat-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #222;
+    }
+
+    .foro-chat-sub {
+      font-size: 12px;
+      color: #999;
+      margin-top: 1px;
+    }
+  }
+}
+
+// ─── Banner de anuncio ─────────────────────────────────────────────────────
+.foro-announcement-banner {
+  background: #faeeda;
+  border-bottom: 1px solid #f5c4b3;
+  padding: 10px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12.5px;
+  color: #633806;
+  flex-shrink: 0;
+
+  p { margin: 0; line-height: 1.4; }
+}
+
+// ─── Mensajes ─────────────────────────────────────────────────────────────
+.foro-messages-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.foro-empty-thread,
+.foro-empty-state p {
+  color: #aaa;
+  font-size: 13px;
+  text-align: center;
+  margin: auto;
+}
+
+.foro-empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.foro-msg-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+
+  &.mine { align-items: flex-end; }
+  &.theirs { align-items: flex-start; }
+}
+
+.foro-msg-sender-name {
+  font-size: 11px;
+  color: #aaa;
+  margin-bottom: 3px;
+  padding: 0 4px;
+}
+
+.foro-msg-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  margin-bottom: 2px;
+
+  .mine & { flex-direction: row-reverse; }
+}
+
+.foro-msg-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  align-self: flex-end;
+}
+
+.foro-msg-avatar-spacer {
+  width: 30px;
+  flex-shrink: 0;
+}
+
+.foro-bubble-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 380px;
+}
+
+.foro-tutor-tag {
+  font-size: 10px;
+  font-weight: 600;
+  background: $azul-dark;
+  color: #fff;
+  border-radius: 20px;
+  padding: 2px 8px;
+  margin-bottom: 4px;
+  align-self: flex-start;
+  letter-spacing: 0.03em;
+}
+
+.foro-bubble {
+  padding: 9px 13px;
+  border-radius: 16px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  word-break: break-word;
+
+  &.bubble-mine {
+    background: $azul-dark;
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+
+  &.bubble-tutor {
+    background: $azul-mid;
+    color: $azul-dark;
+    border: 1px solid $azul-border;
+    border-bottom-left-radius: 4px;
+  }
+
+  &.bubble-student {
+    background: $student-bg;
+    color: $student-text;
+    border-bottom-left-radius: 4px;
+  }
+}
+
+.foro-msg-time {
+  font-size: 10px;
+  color: #bbb;
+  white-space: nowrap;
+  padding-bottom: 2px;
+
+  .mine & { color: #bbb; }
+}
+
+// ─── Input de mensaje ──────────────────────────────────────────────────────
+.foro-input-area {
+  border-top: 1px solid $gris-borde;
+  padding: 12px 16px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.foro-input-box {
+  flex: 1;
+  background: $gris-bg;
+  border: 1px solid $gris-borde;
+  border-radius: 20px;
+  padding: 9px 16px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: #222;
+  resize: none;
+  outline: none;
+  min-height: 40px;
+  max-height: 120px;
+  line-height: 1.5;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: $rosa;
+    box-shadow: 0 0 0 3px rgba(212, 83, 126, 0.1);
+  }
+
+  &::placeholder { color: #bbb; }
+}
+
+.foro-send-btn {
+  height: 40px;
+  padding: 0 18px;
+  background: $rosa;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+
+  &:hover:not(:disabled) { background: $rosa-hover; }
+  &:active:not(:disabled) { transform: scale(0.96); }
+  &:disabled {
+    background: #ddd;
+    cursor: not-allowed;
+  }
+}
+
+// ─── Modal nuevo hilo ──────────────────────────────────────────────────────
+.foro-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.foro-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  width: 360px;
+  max-width: 90vw;
+
+  h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+    color: $azul-dark;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid $gris-borde;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-family: inherit;
+    color: #222;
+    outline: none;
+    margin-bottom: 14px;
+    background: #fff;
+
+    &:focus { border-color: $rosa; }
+  }
+}
+
+.foro-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.foro-modal-cancel {
+  padding: 8px 16px;
+  background: none;
+  border: 1px solid $gris-borde;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #666;
+
+  &:hover { background: $gris-bg; }
+}
+
+.foro-modal-create {
+  padding: 8px 18px;
+  background: $rosa;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover { background: $rosa-hover; }
+}
+
+// ─── Responsive ────────────────────────────────────────────────────────────
+@media (max-width: 640px) {
+  .foro-sidebar {
+    width: 220px;
+    min-width: 220px;
+  }
+
+  .foro-bubble-wrapper {
+    max-width: 240px;
+  }
+}

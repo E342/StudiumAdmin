@@ -2,7 +2,7 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 
-const CourseInfoPanel = ({ id, descripcion, objectives, h_inicio, h_fin, materia, f_inicio, f_fin }) => {
+const CourseInfoPanel = ({ id, descripcion, objectives, h_inicio, h_fin, materia, f_inicio, f_fin, showDescription }) => {
   const [show, setShow] = useState(true);
   function formatearFecha(fecha) {
     const date = new Date(fecha);
@@ -16,8 +16,12 @@ const CourseInfoPanel = ({ id, descripcion, objectives, h_inicio, h_fin, materia
       <button onClick={() => { setShow(!show) }}>TOGGLE</button>
       {
         show ? <article>
-          <h1 className="RecurosH1">Descripción</h1>
-          <p>{descripcion}</p>
+          {showDescription && (
+            <>
+              <h1 className="RecurosH1">Descripción</h1>
+              <p>{descripcion}</p>
+            </>
+          )}
           <h1 className="RecurosH1">Objetivos</h1>
           <p>{objectives}</p>
           <h1 className="RecurosH1">Materia</h1>
@@ -42,6 +46,7 @@ CourseInfoPanel.propTypes = {
   materia: PropTypes.string,
   f_inicio: PropTypes.string,
   f_fin: PropTypes.string,
+  showDescription: PropTypes.bool,
 }
 
 CourseInfoPanel.defaultProps = {
@@ -53,5 +58,6 @@ CourseInfoPanel.defaultProps = {
   materia: "Nombre de la materia",
   f_inicio: "25/Sept/2023",
   f_fin: "26/Sept/2023",
+  showDescription: true,
 }
 export default CourseInfoPanel;

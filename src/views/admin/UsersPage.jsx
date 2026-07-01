@@ -1,11 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
-import { TIPO_LABELS, ROLES, ROLE_TO_TIPO } from '../../constants/roles';
+import * as LuIcons from 'react-icons/lu';
+import axios from 'axios';
 import { GLOBAL } from '../../services/apiConfig';
-import { isMockEnabled, mockFetchUsers } from '../../mocks/mockApi';
-import styles from '../../assets/styles/admin/UsersPage.module.scss';
+import { ROLES, etiquetaRol } from '../../utils/roles';
+import '../../assets/styles/admin/_usersPage.scss';
 
 const API_URL = GLOBAL[0].BASE_URL;
 const PAGE_SIZE = 12;
@@ -14,12 +13,11 @@ const ROLE_OPTIONS = [
   { value: '', label: 'Todos los roles' },
   { value: ROLES.ESTUDIANTE, label: 'Estudiante' },
   { value: ROLES.TUTOR, label: 'Tutor' },
-  { value: ROLES.ADMINISTRADOR, label: 'Administrador' },
+  { value: ROLES.ADMIN, label: 'Administrador' },
 ];
 
 export default function UsersPage() {
   const navigate = useNavigate();
-  const { keycloak } = useAuth();
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,24 +26,12 @@ export default function UsersPage() {
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
-  const getAuthHeaders = useCallback(() => {
-    const token = keycloak?.token;
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }, [keycloak]);
-
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      let allUsers;
-
-      if (isMockEnabled) {
-        allUsers = await mockFetchUsers();
-      } else {
-        const res = await fetch(`${API_URL}/user`, { headers: getAuthHeaders() });
-        if (!res.ok) throw new Error('Error al obtener usuarios');
-        const data = await res.json();
-        allUsers = Array.isArray(data) ? data : data.users || [];
-      }
+      const response = await axios.get(`${API_URL}/user`);
+      let allUsers = response.data;
+      allUsers = Array.isArray(allUsers) ? allUsers : allUsers.users || [];
 
       let filtered = allUsers;
 
@@ -60,21 +46,20 @@ export default function UsersPage() {
       }
 
       if (roleFilter) {
-        const tipoTarget = ROLE_TO_TIPO[roleFilter];
-        filtered = filtered.filter((u) => u.tipo === tipoTarget);
+        filtered = filtered.filter((u) => u.tipo === Number(roleFilter));
       }
 
       setTotalCount(filtered.length);
 
       const start = (page - 1) * PAGE_SIZE;
       setUsers(filtered.slice(start, start + PAGE_SIZE));
-    } catch (err) {
-      console.error('[UsersPage] Error:', err);
+    } catch (error) {
+      console.error('[UsersPage] Error:', error);
       setUsers([]);
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, roleFilter, page, getAuthHeaders]);
+  }, [searchTerm, roleFilter, page]);
 
   useEffect(() => {
     fetchUsers();
@@ -83,31 +68,31 @@ export default function UsersPage() {
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   return (
-    <div className={styles.page}>
-      <div className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>Usuarios</h1>
-        <p className={styles.pageSubtitle}>Lista de usuarios registrados en el sistema</p>
+    <div className="admin-users-page">
+      <div className="admin-page-header">
+        <h1>Usuarios</h1>
+        <p>Lista de usuarios registrados en el sistema</p>
       </div>
 
       {/* Filtros */}
-      <div className={styles.filtersCard}>
-        <div className={styles.filtersRow}>
-          <div className={styles.searchWrapper}>
-            <Search />
+      <div className="admin-filters-card">
+        <div className="admin-filters-row">
+          <div className="admin-search-wrapper">
+            <LuIcons.LuSearch />
             <input
               type="text"
               placeholder="Buscar por nombre o correo..."
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-              className={styles.searchInput}
+              className="admin-search-input"
             />
           </div>
-          <div className={styles.selectWrapper}>
-            <Filter />
+          <div className="admin-select-wrapper">
+            <LuIcons.LuFilter />
             <select
               value={roleFilter}
               onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
-              className={styles.select}
+              className="admin-select"
             >
               {ROLE_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -118,53 +103,48 @@ export default function UsersPage() {
       </div>
 
       {/* Tabla */}
-      <div className={styles.tableCard}>
-        <div className={styles.tableWrapper}>
-          <table className={styles.table}>
-            <thead className={styles.tableHead}>
+      <div className="admin-table-card">
+        <div className="admin-table-wrapper">
+          <table className="admin-table">
+            <thead className="admin-table-head">
               <tr>
                 <th>Usuario</th>
-                <th className={styles.hiddenSm}>Rol</th>
-                <th className={styles.right}>Acciones</th>
+                <th className="admin-hide-sm">Rol</th>
+                <th className="admin-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className={styles.tableBody}>
+            <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={3} className={styles.emptyCell}>Cargando...</td>
-                </tr>
+                <tr><td colSpan={3} className="admin-empty-cell">Cargando...</td></tr>
               ) : users.length === 0 ? (
-                <tr>
-                  <td colSpan={3} className={styles.emptyCell}>No se encontraron usuarios</td>
-                </tr>
+                <tr><td colSpan={3} className="admin-empty-cell">No se encontraron usuarios</td></tr>
               ) : (
                 users.map((user) => {
                   const nombre = user.nombre || user.email || user.correo || 'Sin nombre';
                   const email = user.email || user.correo || '';
                   const inicial = nombre.charAt(0).toUpperCase();
-                  const tipo = user.tipo ?? 2;
-                  const rolLabel = TIPO_LABELS[tipo] || 'Desconocido';
+                  const tipo = user.tipo ?? ROLES.ESTUDIANTE;
 
                   return (
                     <tr key={user._id}>
                       <td>
-                        <div className={styles.userCell}>
-                          <div className={styles.userAvatar}>{inicial}</div>
+                        <div className="admin-user-cell">
+                          <div className="admin-user-avatar">{inicial}</div>
                           <div>
-                            <p className={styles.userName}>{nombre}</p>
-                            <p className={styles.userEmail}>{email}</p>
+                            <p className="admin-user-name">{nombre}</p>
+                            <p className="admin-user-email">{email}</p>
                           </div>
                         </div>
                       </td>
-                      <td className={styles.hiddenSm}>
-                        <span className={styles.roleBadge}>{rolLabel}</span>
+                      <td className="admin-hide-sm">
+                        <span className="admin-role-badge">{etiquetaRol(tipo)}</span>
                       </td>
-                      <td className={styles.right}>
+                      <td className="admin-right">
                         <button
                           onClick={() => navigate(`/admin/users/${user._id}`)}
-                          className={styles.viewBtn}
+                          className="admin-view-btn"
                         >
-                          <Eye />
+                          <LuIcons.LuEye />
                           Ver
                         </button>
                       </td>
@@ -178,25 +158,25 @@ export default function UsersPage() {
 
         {/* Paginación */}
         {totalPages > 1 && (
-          <div className={styles.pagination}>
-            <p className={styles.paginationInfo}>
+          <div className="admin-pagination">
+            <p className="admin-pagination-info">
               {totalCount} usuario{totalCount !== 1 ? 's' : ''} encontrado{totalCount !== 1 ? 's' : ''}
             </p>
-            <div className={styles.paginationControls}>
+            <div className="admin-pagination-controls">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className={styles.pageBtn}
+                className="admin-page-btn"
               >
-                <ChevronLeft />
+                <LuIcons.LuChevronLeft />
               </button>
-              <span className={styles.pageInfo}>{page} / {totalPages}</span>
+              <span className="admin-page-info">{page} / {totalPages}</span>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className={styles.pageBtn}
+                className="admin-page-btn"
               >
-                <ChevronRight />
+                <LuIcons.LuChevronRight />
               </button>
             </div>
           </div>

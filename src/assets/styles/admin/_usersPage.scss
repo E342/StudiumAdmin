@@ -1,36 +1,21 @@
 @import '../variables';
 @import '../mixins';
 
-.page {
+.admin-users-page {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.pageHeader { margin-bottom: 0.25rem; }
-
-.pageTitle {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: $color-azul;
-  margin: 0 0 0.25rem;
-}
-
-.pageSubtitle {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin: 0;
-}
-
 /* ---- Filters ---- */
-.filtersCard {
+.admin-filters-card {
   background-color: $color-blanco;
   border-radius: 0.75rem;
   padding: 1rem;
   @include box-shadow-style;
 }
 
-.filtersRow {
+.admin-filters-row {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -41,23 +26,21 @@
   }
 }
 
-.searchWrapper {
+.admin-search-wrapper {
   position: relative;
   flex: 1;
+  display: flex;
+  align-items: center;
 
   svg {
     position: absolute;
     left: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 1rem;
-    height: 1rem;
     color: #9ca3af;
     pointer-events: none;
   }
 }
 
-.searchInput {
+.admin-search-input {
   width: 100%;
   padding: 0.5rem 1rem 0.5rem 2.25rem;
   border: 1px solid #d1d5db;
@@ -65,6 +48,7 @@
   font-size: 0.875rem;
   outline: none;
   box-sizing: border-box;
+  font-family: $tipografia;
   transition: box-shadow 0.15s;
 
   &:focus {
@@ -73,22 +57,20 @@
   }
 }
 
-.selectWrapper {
+.admin-select-wrapper {
   position: relative;
+  display: flex;
+  align-items: center;
 
   svg {
     position: absolute;
     left: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 1rem;
-    height: 1rem;
     color: #9ca3af;
     pointer-events: none;
   }
 }
 
-.select {
+.admin-select {
   padding: 0.5rem 1rem 0.5rem 2.25rem;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
@@ -97,6 +79,7 @@
   appearance: none;
   background-color: $color-blanco;
   cursor: pointer;
+  font-family: $tipografia;
 
   &:focus {
     box-shadow: 0 0 0 2px $color-rosa;
@@ -105,22 +88,22 @@
 }
 
 /* ---- Table ---- */
-.tableCard {
+.admin-table-card {
   background-color: $color-blanco;
   border-radius: 0.75rem;
   overflow: hidden;
   @include box-shadow-style;
 }
 
-.tableWrapper { overflow-x: auto; }
+.admin-table-wrapper { overflow-x: auto; }
 
-.table {
+.admin-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.875rem;
 }
 
-.tableHead {
+.admin-table-head {
   background-color: $color-azul;
 
   th {
@@ -131,35 +114,33 @@
   }
 }
 
-.tableBody {
-  tr {
-    border-bottom: 1px solid #f3f4f6;
-    transition: background-color 0.1s;
+.admin-table tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+  transition: background-color 0.1s;
 
-    &:last-child { border-bottom: none; }
-    &:hover { background-color: $color-bg; }
+  &:last-child { border-bottom: none; }
+  &:hover { background-color: $color-bg; }
 
-    td { padding: 0.75rem 1rem; }
-  }
+  td { padding: 0.75rem 1rem; }
 }
 
-.hiddenSm { @media (max-width: 639px) { display: none; } }
-.right    { text-align: right; }
+.admin-hide-sm { @media (max-width: 639px) { display: none; } }
+.admin-right   { text-align: right; }
 
-.emptyCell {
+.admin-empty-cell {
   padding: 3rem 1rem;
   text-align: center;
   color: #9ca3af;
 }
 
 /* ---- User cell ---- */
-.userCell {
+.admin-user-cell {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.userAvatar {
+.admin-user-avatar {
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 50%;
@@ -173,7 +154,7 @@
   flex-shrink: 0;
 }
 
-.userName {
+.admin-user-name {
   font-weight: 500;
   color: $color-azul;
   white-space: nowrap;
@@ -183,7 +164,7 @@
   max-width: 16rem;
 }
 
-.userEmail {
+.admin-user-email {
   font-size: 0.75rem;
   color: #6b7280;
   white-space: nowrap;
@@ -194,7 +175,7 @@
 }
 
 /* ---- Role badge ---- */
-.roleBadge {
+.admin-role-badge {
   display: inline-flex;
   align-items: center;
   padding: 0.2rem 0.625rem;
@@ -206,18 +187,16 @@
 }
 
 /* ---- View button ---- */
-.viewBtn {
+.admin-view-btn {
   @include boton-generico;
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
   font-size: 0.75rem;
-
-  svg { width: 0.875rem; height: 0.875rem; }
 }
 
-/* ---- Pagination (igual estilo que el home) ---- */
-.pagination {
+/* ---- Pagination ---- */
+.admin-pagination {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -225,25 +204,23 @@
   border-top: 1px solid $color-gris;
 }
 
-.paginationInfo {
+.admin-pagination-info {
   font-size: 0.875rem;
   color: #6b7280;
   margin: 0;
 }
 
-.paginationControls {
+.admin-pagination-controls {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.pageBtn {
+.admin-page-btn {
   @include boton-generico;
   display: flex;
   align-items: center;
   margin: 0;
-
-  svg { width: 1rem; height: 1rem; }
 
   &:disabled {
     opacity: 0.6;
@@ -253,7 +230,7 @@
   }
 }
 
-.pageInfo {
+.admin-page-info {
   font-size: 0.875rem;
   font-weight: 500;
   color: $color-azul;

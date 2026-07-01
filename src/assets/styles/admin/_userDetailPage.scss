@@ -1,13 +1,13 @@
 @import '../variables';
 @import '../mixins';
 
-.page {
+.admin-user-detail-page {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.centerMsg {
+.admin-center-msg {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,7 +16,7 @@
   font-size: 0.875rem;
 }
 
-.backBtn {
+.admin-back-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -26,13 +26,13 @@
   border: none;
   cursor: pointer;
   padding: 0;
+  font-family: $tipografia;
   transition: color 0.15s;
 
-  svg { width: 1rem; height: 1rem; }
-  &:hover { color: #111827; }
+  &:hover { color: $color-azul; }
 }
 
-.formWrapper {
+.admin-detail-wrapper {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -40,21 +40,34 @@
 }
 
 /* ---- Profile card ---- */
-.profileCard {
+.admin-profile-card {
   background-color: $color-blanco;
   border-radius: 0.75rem;
   padding: 1.5rem;
   @include box-shadow-style;
 }
 
-.profileTop {
+.admin-profile-top {
   display: flex;
   align-items: center;
   gap: 1rem;
   margin-bottom: 1.25rem;
+
+  h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $color-azul;
+    margin: 0 0 0.25rem;
+  }
+
+  p {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+  }
 }
 
-.profileAvatar {
+.admin-profile-avatar {
   width: 4rem;
   height: 4rem;
   border-radius: 50%;
@@ -68,20 +81,7 @@
   flex-shrink: 0;
 }
 
-.profileName {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: $color-azul;
-  margin: 0 0 0.25rem;
-}
-
-.profileEmail {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin: 0;
-}
-
-.profileMeta {
+.admin-profile-meta {
   display: flex;
   flex-direction: column;
   gap: 0.625rem;
@@ -89,36 +89,36 @@
   color: #6b7280;
 }
 
-.profileMetaItem {
+.admin-profile-meta-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 
-  svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+  svg { flex-shrink: 0; }
 }
 
-.rolHighlight {
+.admin-rol-highlight {
   color: $color-azul;
   font-weight: 600;
 }
 
 /* ---- Action card ---- */
-.actionCard {
+.admin-action-card {
   background-color: $color-blanco;
   border-radius: 0.75rem;
   padding: 1.5rem;
   @include box-shadow-style;
-}
 
-.actionTitle {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: $color-azul;
-  margin: 0 0 1.25rem;
+  h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $color-azul;
+    margin: 0 0 1.25rem;
+  }
 }
 
 /* ---- Promote box ---- */
-.promoteBox {
+.admin-promote-box {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -134,40 +134,38 @@
   }
 }
 
-.promoteInfo {
+.admin-promote-info {
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
 }
 
-.promoteIcon {
-  width: 1.75rem;
-  height: 1.75rem;
+.admin-promote-icon {
+  font-size: 1.75rem;
   color: $color-azul;
   flex-shrink: 0;
-  margin-top: 0.1rem;
 }
 
-.promoteLabel {
+.admin-promote-label {
   font-weight: 600;
   font-size: 0.9375rem;
   color: $color-azul;
   margin: 0 0 0.25rem;
 }
 
-.promoteDesc {
+.admin-promote-desc {
   font-size: 0.875rem;
   color: #4b5563;
   margin: 0;
   line-height: 1.5;
 }
 
-.promoteBtn {
+.admin-promote-btn {
   @include boton-generico;
   font-weight: 500;
   white-space: nowrap;
   flex-shrink: 0;
-  margin: 0;
+  padding: 0.625rem 1.25rem;
 
   &:disabled {
     opacity: 0.6;
@@ -178,11 +176,11 @@
 }
 
 /* ---- No action ---- */
-.noActionMsg {
+.admin-no-action-msg {
   font-size: 0.875rem;
   color: #6b7280;
   padding: 1rem;
-  background-color: #f9fafb;
+  background-color: $color-bg;
   border-radius: 0.5rem;
   margin: 0;
 }
