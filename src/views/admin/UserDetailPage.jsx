@@ -20,9 +20,11 @@ export default function UserDetailPage() {
   const fetchProfile = async () => {
     try {
       const response = await axios.get(`${API_URL}/user/profile/${id}`);
-      setProfile(response.data);
+      // El backend puede devolver { user: {...} } o el objeto directamente
+      const data = response.data;
+      setProfile(data.user || data.usuario || data);
     } catch (error) {
-      console.error('[UserDetailPage] Error:', error);
+      console.error('[UserDetailPage] Error al cargar perfil:', error);
       setProfile(null);
     } finally {
       setLoading(false);
@@ -52,7 +54,27 @@ export default function UserDetailPage() {
 
     setPromoting(true);
     try {
-      await axios.patch(`${API_URL}/user/${id}`, { tipo: ROLES.TUTOR });
+      // Intentar las rutas más comunes del backend para actualizar usuario
+      // El backend puede exponer PATCH /user/:id o PATCH /user/profile/:id
+      let updateError;
+      const routes = [
+        `${API_URL}/user/profile/${id}`,
+        `${API_URL}/user/${id}`,
+        `${API_URL}/users/${id}`,
+      ];
+
+      let success = false;
+      for (const route of routes) {
+        try {
+          const res = await axios.patch(route, { tipo: ROLES.TUTOR, roles: ['tutor'] });
+          if (res.status < 400) { success = true; break; }
+        } catch (err) {
+          if (err?.response?.status !== 404) { updateError = err; break; }
+          updateError = err;
+        }
+      }
+
+      if (!success) throw updateError;
 
       await showSuccess({
         title: '¡Usuario ascendido!',
@@ -62,7 +84,11 @@ export default function UserDetailPage() {
       setLoading(true);
       await fetchProfile();
     } catch (error) {
-      showError({ text: 'No se pudo actualizar el rol del usuario.' });
+      console.error('[UserDetailPage] Error al ascender:', error);
+      showError({
+        title: 'No se pudo actualizar',
+        text: error?.response?.data?.message || 'No se pudo actualizar el rol del usuario.',
+      });
     } finally {
       setPromoting(false);
     }
@@ -94,14 +120,26 @@ export default function UserDetailPage() {
       </button>
 
       <div className="admin-detail-wrapper">
-        {/* Cabecera de perfil */}
+
+        {/* Tarjeta de perfil — ocupa todo el ancho */}
         <div className="admin-profile-card">
           <div className="admin-profile-top">
             <div className="admin-profile-avatar">{inicial}</div>
-            <div>
+            <div className="admin-profile-info">
               <h1>{nombre}</h1>
               <p>{email}</p>
             </div>
+            {/* Botón de ascenso en la esquina superior derecha */}
+            {canPromote && (
+              <button
+                onClick={handlePromote}
+                disabled={promoting}
+                className="admin-promote-btn-corner"
+              >
+                <LuIcons.LuArrowUpCircle />
+                {promoting ? 'Procesando...' : 'Ascender a Tutor'}
+              </button>
+            )}
           </div>
 
           <div className="admin-profile-meta">
@@ -116,16 +154,16 @@ export default function UserDetailPage() {
             <div className="admin-profile-meta-item">
               <LuIcons.LuShield />
               <span>
-                Rol actual: <strong className="admin-rol-highlight">{etiquetaRol(tipo)}</strong>
+                Rol actual:{' '}
+                <strong className="admin-rol-highlight">{etiquetaRol(tipo)}</strong>
               </span>
             </div>
           </div>
         </div>
 
-        {/* Acción de ascenso */}
+        {/* Tarjeta de gestión de rol */}
         <div className="admin-action-card">
           <h2>Gestión de rol</h2>
-
           {canPromote ? (
             <div className="admin-promote-box">
               <div className="admin-promote-info">
