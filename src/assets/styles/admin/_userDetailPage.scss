@@ -5,6 +5,15 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  margin: 1.5rem 1rem;
+
+  @media (min-width: 640px) {
+    margin: 1.5rem 2rem;
+  }
+
+  @media (min-width: 1024px) {
+    margin: 1.5rem 3rem;
+  }
 }
 
 .admin-center-msg {
@@ -36,15 +45,23 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  max-width: 42rem;
+  width: 100%;
+
+  @media (min-width: 640px) {
+    max-width: 42rem;
+  }
 }
 
 /* ---- Profile card ---- */
 .admin-profile-card {
   background-color: $color-blanco;
   border-radius: 0.75rem;
-  padding: 1.5rem;
+  padding: 1rem;
   @include box-shadow-style;
+
+  @media (min-width: 640px) {
+    padding: 1.5rem;
+  }
 }
 
 .admin-profile-top {
@@ -52,18 +69,24 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: 1.25rem;
+  flex-wrap: wrap;
 
   h1 {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     font-weight: 700;
     color: $color-azul;
     margin: 0 0 0.25rem;
+
+    @media (min-width: 640px) {
+      font-size: 1.25rem;
+    }
   }
 
   p {
     font-size: 0.875rem;
     color: #6b7280;
     margin: 0;
+    word-break: break-all;
   }
 }
 
@@ -106,8 +129,12 @@
 .admin-action-card {
   background-color: $color-blanco;
   border-radius: 0.75rem;
-  padding: 1.5rem;
+  padding: 1rem;
   @include box-shadow-style;
+
+  @media (min-width: 640px) {
+    padding: 1.5rem;
+  }
 
   h2 {
     font-size: 1.125rem;

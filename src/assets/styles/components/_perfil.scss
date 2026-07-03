@@ -433,3 +433,70 @@ h3 {
         }
     }
 }
+/* ---- Admin perfil ---- */
+.admin-perfil-avatar-grande {
+    width: 5rem;
+    height: 5rem;
+    border-radius: 50%;
+    background-color: $color-rosa;
+    color: $color-azul;
+    font-weight: 700;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.admin-perfil-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    margin-bottom: 1.25rem;
+}
+
+.admin-perfil-info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.625rem 0;
+    border-bottom: 1px solid $color-gris;
+    font-size: 0.875rem;
+
+    &:last-child { border-bottom: none; }
+}
+
+.admin-perfil-info-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #6b7280;
+    font-weight: 500;
+
+    svg { width: 1rem; height: 1rem; }
+}
+
+.admin-perfil-info-value {
+    color: $color-azul;
+    font-weight: 500;
+}
+
+.admin-perfil-badge {
+    display: inline-flex;
+    padding: 0.2rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background-color: $color-rosa;
+    color: $color-azul;
+}
+
+.admin-perfil-nota {
+    font-size: 0.8125rem;
+    color: #9ca3af;
+    text-align: center;
+    margin: 0;
+    padding-top: 0.75rem;
+    border-top: 1px solid $color-gris;
+    line-height: 1.5;
+}

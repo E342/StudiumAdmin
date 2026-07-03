@@ -36,7 +36,7 @@ export default function UserDetailPage() {
   }, [id]);
 
   const handlePromote = async () => {
-    if (!profile || profile.tipo !== ROLES.ESTUDIANTE) return;
+    if (!profile || Number(profile.tipo) !== ROLES.ESTUDIANTE) return;
 
     const nombre = profile.nombre || profile.email || profile.correo || 'este usuario';
 
@@ -79,7 +79,7 @@ export default function UserDetailPage() {
   const nombre = profile.nombre || profile.email || profile.correo || 'Sin nombre';
   const email = profile.email || profile.correo || '';
   const inicial = nombre.charAt(0).toUpperCase();
-  const tipo = profile.tipo ?? ROLES.ESTUDIANTE;
+  const tipo = Number(profile.tipo ?? ROLES.ESTUDIANTE);
   const fechaRegistro = profile.createdAt
     ? new Date(profile.createdAt).toLocaleDateString('es-SV')
     : '—';
