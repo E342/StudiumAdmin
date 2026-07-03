@@ -12,3 +12,17 @@
 @import './components/ContentRecursos';
 @import './components/pageRecursos';
 @import './components/barCard';
+
+// Loader mostrado mientras App.jsx confirma el rol de la sesión contra el
+// backend, para evitar el "flash" de contenido incorrecto justo tras el login.
+.app-session-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100%;
+  font-family: $tipografia;
+  color: $color-azul;
+  background-color: $color-bg;
+  font-size: 0.95rem;
+}

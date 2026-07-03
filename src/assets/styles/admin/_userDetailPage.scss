@@ -103,8 +103,8 @@
   flex-shrink: 0;
 
   @media (min-width: 640px) {
-    width: 4rem;
-    height: 4rem;
+  width: 4rem;
+  height: 4rem;
   }
 }
 
@@ -179,7 +179,7 @@
   }
 }
 
-/* ---- Promote box (dentro de la action card) ---- */
+/* ---- Promote box ---- */
 .admin-promote-box {
   display: flex;
   flex-direction: column;
@@ -239,6 +239,51 @@
     opacity: 0.6;
     cursor: not-allowed;
     background-color: $color-rosa;
+    color: $color-azul;
+  }
+}
+
+/* ---- Revoke box ---- */
+.admin-revoke-box {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: $color-bg;
+  border-radius: 0.75rem;
+  border-left: 4px solid $color-rosa-oscuro;
+
+  @media (min-width: 640px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.admin-revoke-icon {
+  font-size: 1.75rem;
+  color: $color-azul;
+  flex-shrink: 0;
+}
+
+.admin-revoke-btn {
+  @include boton-generico;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 0.625rem 1.25rem;
+  background-color: transparent;
+  border: 1px solid $color-rosa-oscuro;
+
+  &:hover {
+    background-color: $color-rosa-oscuro;
+    color: $color-blanco;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: transparent;
     color: $color-azul;
   }
 }

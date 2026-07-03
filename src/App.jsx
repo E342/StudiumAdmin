@@ -47,6 +47,11 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   const [authId, setAuthId] = useState(() => localStorage.getItem('ID'));
   const [userType, setUserType] = useState(() => normalizarTipoUsuario(localStorage.getItem('ROL')));
+  // Mientras haya un id de sesión pero el rol todavía no se confirmó contra
+  // el backend, evitamos renderizar las rutas (que comparan userType) para
+  // no mostrar un "flash" de contenido incorrecto: p. ej. una redirección
+  // momentánea a /home antes de resolver que el usuario en realidad es admin.
+  const [isCheckingRole, setIsCheckingRole] = useState(() => !!localStorage.getItem('ID'));
   const API_URL = GLOBAL.map((e) => { return e.BASE_URL });
 
   // Mantener id y rol sincronizados con localStorage ante cambios de sesión:
@@ -55,8 +60,10 @@ function App() {
   // quedaba obsoleto y las rutas de tutor redirigían siempre a /home.
   useEffect(() => {
     const sincronizarSesion = () => {
-      setAuthId(localStorage.getItem('ID'));
+      const id = localStorage.getItem('ID');
+      setAuthId(id);
       setUserType(normalizarTipoUsuario(localStorage.getItem('ROL')));
+      setIsCheckingRole(!!id);
     };
     window.addEventListener('auth-change', sincronizarSesion);
     window.addEventListener('storage', sincronizarSesion);
@@ -69,7 +76,10 @@ function App() {
   useEffect(() => {
     const id = authId;
     console.log('[App] id:', id, '| ROL en localStorage:', localStorage.getItem('ROL'), '| userType inicial:', userType);
-    if (!id) return; // No hacer petición si no hay usuario logueado
+    if (!id) {
+      setIsCheckingRole(false);
+      return; // No hacer petición si no hay usuario logueado
+    }
     const fetchUserType = async () => {
       try {
         const response = await axios.get(`${API_URL}/user/profile/${id}`);
@@ -98,10 +108,16 @@ function App() {
         }
       } catch (error) {
         console.error('Error al obtener el tipo de usuario', error);
+      } finally {
+        setIsCheckingRole(false);
       }
     };
     fetchUserType();
   }, [authId]);
+
+  if (isCheckingRole) {
+    return <div className="app-session-loading" aria-live="polite">Cargando sesión...</div>;
+  }
 
   return (
     <Router>
