@@ -21,7 +21,15 @@ function AdminProfilePage() {
     return (
         <div className="perfil-vista">
             <div className="cabecera-vista" style={{ marginBottom: '1.5rem' }}>
-                <div className="admin-perfil-avatar-grande">{inicial}</div>
+                {userData.imagen ? (
+                    <img
+                        src={userData.imagen}
+                        alt={`Foto de perfil de ${nombre}`}
+                        className="admin-perfil-avatar-img"
+                    />
+                ) : (
+                    <div className="admin-perfil-avatar-grande">{inicial}</div>
+                )}
                 <div className="container-datos" style={{ marginLeft: '1rem' }}>
                     <h1 className="nomP">{nombre}</h1>
                     <h3 className="corP">{email}</h3>

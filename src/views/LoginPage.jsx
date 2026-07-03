@@ -519,12 +519,26 @@ export const LoginPage = () => {
     useEffect(() => {
         if (!initialized || !authenticated || !keycloak) return;
         if (processedRedirectRef.current) return;
-        if (localStorage.getItem('ID')) {
-            // Sesión ya estaba persistida; navega al home.
+
+        const emailPersistido = String(localStorage.getItem('EMAIL') || '').trim().toLowerCase();
+        const emailKeycloak = String(
+            keycloak.tokenParsed?.email || keycloak.tokenParsed?.preferred_username || ''
+        ).trim().toLowerCase();
+
+        if (localStorage.getItem('ID') && emailPersistido && emailPersistido === emailKeycloak) {
+            // Sesión ya estaba persistida y corresponde al mismo usuario autenticado en Keycloak.
             processedRedirectRef.current = true;
             notificarCambioSesion();
             redirectHome();
             return;
+        }
+
+        if (localStorage.getItem('ID') && emailPersistido !== emailKeycloak) {
+            // Quedó una sesión de otro usuario en localStorage (p. ej. el logout no
+            // terminó de limpiarla antes de que Keycloak autenticara a esta cuenta).
+            // La descartamos para no saltar a /home con datos de otra persona.
+            console.warn('[Keycloak] Sesión persistida no coincide con el usuario autenticado; se descarta.');
+            localStorage.clear();
         }
 
         processedRedirectRef.current = true;

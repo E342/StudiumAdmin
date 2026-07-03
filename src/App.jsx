@@ -78,6 +78,21 @@ function App() {
       setIsCheckingRole(false);
       return; // No hacer petición si no hay usuario logueado
     }
+
+    let settled = false;
+    // Salvaguarda: si la petición de /user/profile no responde (o falla sin
+    // disparar el catch/finally, p. ej. porque el ID pertenece a una sesión
+    // anterior y el token ya no coincide) en este tiempo máximo, liberamos
+    // igual la pantalla de "Cargando sesión..." para no dejar al usuario
+    // trabado ahí.
+    const timeoutId = setTimeout(() => {
+      if (!settled) {
+        console.warn('[App] Tiempo de espera agotado al verificar el rol; se libera la pantalla de carga.');
+        settled = true;
+        setIsCheckingRole(false);
+      }
+    }, 8000);
+
     const fetchUserType = async () => {
       try {
         const response = await axios.get(`${API_URL}/user/profile/${id}`);
@@ -107,10 +122,19 @@ function App() {
       } catch (error) {
         console.error('Error al obtener el tipo de usuario', error);
       } finally {
-        setIsCheckingRole(false);
+        if (!settled) {
+          settled = true;
+          clearTimeout(timeoutId);
+          setIsCheckingRole(false);
+        }
       }
     };
     fetchUserType();
+
+    return () => {
+      settled = true;
+      clearTimeout(timeoutId);
+    };
   }, [authId]);
 
   if (isCheckingRole) {
