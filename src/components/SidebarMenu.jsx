@@ -3,13 +3,20 @@ import * as AiIcons from "react-icons/ai";
 import { Link } from "react-router-dom";
 import { sidebarMenuItems } from "./SidebarMenuItems"
 import { IconContext } from "react-icons";
+import { obtenerRolActual } from "../utils/roles";
 import '../assets/styles/components/_navbar.scss'
 
 function SidebarMenu() {
     const [sidebar, setSidebar] = useState(false);
 
     const showSidebar = () => setSidebar(!sidebar);
-    
+
+    const rolActual = obtenerRolActual();
+    const nombreUsuario = localStorage.getItem("NAME") || "";
+    const itemsVisibles = sidebarMenuItems.filter(
+        (item) => !item.roles || item.roles.includes(rolActual)
+    );
+
 
     return (
         <>  
@@ -21,7 +28,12 @@ function SidebarMenu() {
                                 <AiIcons.AiOutlineClose />
                             </Link>
                         </li>
-                        {sidebarMenuItems.map((item, index) => {
+                        {nombreUsuario && (
+                            <li className="nav-user-name">
+                                <span className="opc">{nombreUsuario}</span>
+                            </li>
+                        )}
+                        {itemsVisibles.map((item, index) => {
                             return (
                                 <li key={index} className={item.cName}>
                                     <Link to={item.path}>

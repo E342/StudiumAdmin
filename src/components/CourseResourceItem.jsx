@@ -14,7 +14,7 @@ function convertirTextoAHtml(texto) {
     return `<p>${nuevoTexto}</p>`;
 }
 
-const CourseResourceItem = ({ id, titulo, textContent, owner, id_curso }) => {
+const CourseResourceItem = ({ id, titulo, textContent, owner, id_curso, onDeleted }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     //LOCAL STORAGE
     const id_user = localStorage.getItem('ID');
@@ -35,13 +35,22 @@ const CourseResourceItem = ({ id, titulo, textContent, owner, id_curso }) => {
         if (!confirmed) return;
 
         try {
-            const response = await axios.delete(`${API_URL}/course/${id_curso}/resource/${id}`);
+            const token = localStorage.getItem('TOKEN');
+            const response = await axios.delete(`${API_URL}/course/${id_curso}/resource/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             console.log(response.data);
             await showSuccess({
                 title: 'Recurso eliminado',
                 text: 'El recurso fue eliminado correctamente.',
             });
-            window.location.reload();
+            // Si el contenedor provee un callback, refresca solo la lista;
+            // de lo contrario, recarga la página (comportamiento previo).
+            if (typeof onDeleted === 'function') {
+                onDeleted(id);
+            } else {
+                window.location.reload();
+            }
         } catch (error) {
             console.error("Hubo un error en la solicitud: ", error);
             showError({
@@ -59,8 +68,8 @@ const CourseResourceItem = ({ id, titulo, textContent, owner, id_curso }) => {
                     <div dangerouslySetInnerHTML={{ __html: htmlConLinks }}></div>
                     {owner == id_user ?
                         <span>
-                            <button className='btnDEL' onClick={handleDeleteR}>Eliminar todo</button>
-                            <button className='btnEDIT' onClick={() => setIsModalOpen(true)}>Editar recursos</button>
+                            <button className='btnDEL' onClick={handleDeleteR}>Eliminar recurso</button>
+                            <button className='btnEDIT' onClick={() => setIsModalOpen(true)}>Editar recurso</button>
                         </span> : null
                     }
                     {isModalOpen && (
@@ -85,7 +94,8 @@ CourseResourceItem.propTypes = {
     id: PropTypes.string,
     titulo: PropTypes.string,
     textContent: PropTypes.string,
-    id_curso: PropTypes.string
+    id_curso: PropTypes.string,
+    onDeleted: PropTypes.func
 }
 CourseResourceItem.defaultProps = {
     owner: "0",

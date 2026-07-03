@@ -8,6 +8,8 @@
   margin-right: -8px;
   display: flex;
   justify-content: space-between;
+  position: relative;
+  z-index: 100;
 }
  .menu {
   height: 2.5rem;

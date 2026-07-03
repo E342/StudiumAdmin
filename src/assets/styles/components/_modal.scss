@@ -30,6 +30,12 @@
   justify-content: center;
 }
 
+.modal.modal-scroll {
+  max-height: 90vh;
+  overflow-y: auto;
+  align-items: flex-start;
+}
+
 .modal form {
   display: flex;
   flex-direction: column;

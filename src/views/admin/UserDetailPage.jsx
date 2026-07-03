@@ -1,50 +1,31 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, Shield, Calendar, ArrowUpCircle } from 'lucide-react';
-import Swal from 'sweetalert2';
-import { useAuth } from '../../hooks/useAuth';
-import { TIPO_LABELS, ROLE_TO_TIPO, ROLES } from '../../constants/roles';
+import * as LuIcons from 'react-icons/lu';
+import axios from 'axios';
 import { GLOBAL } from '../../services/apiConfig';
-import { isMockEnabled, mockFetchUserById, mockPatchUser } from '../../mocks/mockApi';
-import styles from '../../assets/styles/admin/UserDetailPage.module.scss';
+import { ROLES, etiquetaRol, resolverRolDesdeRoles } from '../../utils/roles';
+import { showConfirm, showSuccess, showError } from '../../utils/alerts';
+import '../../assets/styles/admin/_userDetailPage.scss';
 
 const API_URL = GLOBAL[0].BASE_URL;
-
-// Los únicos tipos que permiten el ascenso según el nuevo alcance
-const TIPO_ESTUDIANTE = ROLE_TO_TIPO[ROLES.ESTUDIANTE]; // 2
-const TIPO_TUTOR = ROLE_TO_TIPO[ROLES.TUTOR];           // 3
 
 export default function UserDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { keycloak } = useAuth();
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [promoting, setPromoting] = useState(false);
-
-  const getAuthHeaders = () => {
-    const token = keycloak?.token;
-    return token
-      ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
-      : { 'Content-Type': 'application/json' };
-  };
+  const [actionLoading, setActionLoading] = useState(false);
 
   const fetchProfile = async () => {
     try {
-      let data;
-      if (isMockEnabled) {
-        data = await mockFetchUserById(id);
-      } else {
-        const res = await fetch(`${API_URL}/user/profile/${id}`, {
-          headers: getAuthHeaders(),
-        });
-        if (!res.ok) throw new Error('No encontrado');
-        data = await res.json();
-      }
-      setProfile(data);
-    } catch (err) {
-      console.error('[UserDetailPage] Error:', err);
+      const response = await axios.get(`${API_URL}/user/profile/${id}`);
+      const data = response.data;
+      const rolesArr = Array.isArray(data.roles) ? data.roles : [];
+      const tipo = resolverRolDesdeRoles(rolesArr) || ROLES.ESTUDIANTE;
+      setProfile({ ...data, tipo });
+    } catch (error) {
+      console.error('[UserDetailPage] Error al cargar perfil:', error);
       setProfile(null);
     } finally {
       setLoading(false);
@@ -57,157 +38,159 @@ export default function UserDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const handlePromote = async () => {
-    if (!profile || profile.tipo !== TIPO_ESTUDIANTE) return;
+  // Acción genérica de cambio de rol: assign (ascender) o revoke (revertir)
+  const handleRoleChange = async (action) => {
+    if (!profile) return;
 
-    const nombre = profile.nombre || profile.email || profile.correo || 'este usuario';
+    const nombre = profile.nombre || profile.email || 'este usuario';
+    const esAscenso = action === 'assign';
 
-    const result = await Swal.fire({
+    const confirmed = await showConfirm({
+      title: esAscenso ? 'Ascender a Tutor' : 'Revertir a Estudiante',
+      text: esAscenso
+        ? `¿Deseas ascender a ${nombre} de Estudiante a Tutor?`
+        : `¿Deseas revertir a ${nombre} de Tutor a Estudiante?`,
       icon: 'question',
-      title: 'Ascender a Tutor',
-      html: `
-        <p style="font-size:0.9375rem;line-height:1.6">
-          ¿Deseas ascender a <strong>${nombre}</strong> de
-          <em>Estudiante</em> a <em>Tutor</em>?
-        </p>
-        <p style="font-size:0.8125rem;color:#6b7280;margin-top:0.5rem">
-          Esta acción cambia el campo <code>tipo</code> de 2 a 3. No puede deshacerse desde este panel.
-        </p>
-      `,
-      showCancelButton: true,
-      confirmButtonText: 'Sí, ascender',
+      confirmButtonText: esAscenso ? 'Sí, ascender' : 'Sí, revertir',
       cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#1D3956',
-      cancelButtonColor: '#6b7280',
-      reverseButtons: true,
-      focusCancel: true,
     });
 
-    if (!result.isConfirmed) return;
+    if (!confirmed) return;
 
-    setPromoting(true);
+    setActionLoading(true);
     try {
-      if (isMockEnabled) {
-        await mockPatchUser(id, { tipo: TIPO_TUTOR });
-      } else {
-        const res = await fetch(`${API_URL}/user/${id}`, {
-          method: 'PATCH',
-          headers: getAuthHeaders(),
-          body: JSON.stringify({ tipo: TIPO_TUTOR }),
-        });
+      await axios.patch(`${API_URL}/user/${id}/role`, { role: 'tutor', action });
 
-        if (!res.ok) throw new Error('Error al actualizar');
-      }
-
-      await Swal.fire({
-        icon: 'success',
-        title: '¡Usuario ascendido!',
-        text: `${nombre} ahora es Tutor.`,
-        confirmButtonColor: '#1D3956',
+      await showSuccess({
+        title: esAscenso ? '¡Usuario ascendido!' : '¡Rol revertido!',
+        text: esAscenso
+          ? `${nombre} ahora es Tutor.`
+          : `${nombre} ahora es Estudiante.`,
       });
 
-      // Recargar el perfil para reflejar el cambio
-      setLoading(true);
+      // Recargar el perfil SIN pasar por setLoading(true): así el
+      // componente no se desmonta/remonta y el badge de "Rol actual"
+      // se actualiza directamente al terminar el fetch.
       await fetchProfile();
-    } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo actualizar el rol del usuario.',
-        confirmButtonColor: '#1D3956',
+    } catch (error) {
+      console.error('[UserDetailPage] Error al cambiar rol:', error);
+      showError({
+        title: 'No se pudo actualizar',
+        text: error?.response?.data?.error || 'No se pudo actualizar el rol del usuario.',
       });
     } finally {
-      setPromoting(false);
+      setActionLoading(false);
     }
   };
 
-  /* ---- Renderizado ---- */
-
   if (loading) {
-    return <div className={styles.centerMsg}>Cargando perfil...</div>;
+    return <div className="admin-center-msg">Cargando perfil...</div>;
   }
 
   if (!profile) {
-    return <div className={styles.centerMsg}>Usuario no encontrado</div>;
+    return <div className="admin-center-msg">Usuario no encontrado</div>;
   }
 
   const nombre = profile.nombre || profile.email || profile.correo || 'Sin nombre';
   const email = profile.email || profile.correo || '';
   const inicial = nombre.charAt(0).toUpperCase();
-  const tipo = profile.tipo ?? 2;
-  const rolLabel = TIPO_LABELS[tipo] || 'Desconocido';
+  const tipo = profile.tipo;
   const fechaRegistro = profile.createdAt
     ? new Date(profile.createdAt).toLocaleDateString('es-SV')
     : '—';
 
-  const canPromote = tipo === TIPO_ESTUDIANTE;
+  const esEstudiante = tipo === ROLES.ESTUDIANTE;
+  const esTutor = tipo === ROLES.TUTOR;
 
   return (
-    <div className={styles.page}>
-      <button className={styles.backBtn} onClick={() => navigate('/admin/users')}>
-        <ArrowLeft />
+    <div className="admin-user-detail-page">
+      <button className="admin-back-btn" onClick={() => navigate('/admin/users')}>
+        <LuIcons.LuArrowLeft />
         Volver a usuarios
       </button>
 
-      <div className={styles.formWrapper}>
-        {/* Cabecera de perfil */}
-        <div className={styles.profileCard}>
-          <div className={styles.profileTop}>
-            <div className={styles.profileAvatar}>{inicial}</div>
-            <div>
-              <h1 className={styles.profileName}>{nombre}</h1>
-              <p className={styles.profileEmail}>{email}</p>
+      <div className="admin-detail-wrapper">
+
+        {/* Tarjeta de perfil */}
+        <div className="admin-profile-card">
+          <div className="admin-profile-top">
+              <div className="admin-profile-avatar">{inicial}</div>
+            <div className="admin-profile-info">
+              <h1>{nombre}</h1>
+              <p>{email}</p>
             </div>
           </div>
 
-          <div className={styles.profileMeta}>
-            <div className={styles.profileMetaItem}>
-              <Calendar />
+          <div className="admin-profile-meta">
+            <div className="admin-profile-meta-item">
+              <LuIcons.LuCalendar />
               <span>Registrado: {fechaRegistro}</span>
             </div>
-            <div className={styles.profileMetaItem}>
-              <Mail />
+            <div className="admin-profile-meta-item">
+              <LuIcons.LuMail />
               <span>{email || '—'}</span>
             </div>
-            <div className={styles.profileMetaItem}>
-              <Shield />
+            <div className="admin-profile-meta-item">
+              <LuIcons.LuShield />
               <span>
                 Rol actual:{' '}
-                <strong className={styles.rolHighlight}>{rolLabel}</strong>
+                <strong className="admin-rol-highlight">{etiquetaRol(tipo)}</strong>
               </span>
             </div>
           </div>
         </div>
 
-        {/* Acción de ascenso */}
-        <div className={styles.actionCard}>
-          <h2 className={styles.actionTitle}>Gestión de rol</h2>
+        {/* Tarjeta de gestión de rol */}
+        <div className="admin-action-card">
+          <h2>Gestión de rol</h2>
 
-          {canPromote ? (
-            <div className={styles.promoteBox}>
-              <div className={styles.promoteInfo}>
-                <ArrowUpCircle className={styles.promoteIcon} />
+          {esEstudiante && (
+            <div className="admin-promote-box">
+              <div className="admin-promote-info">
+                <LuIcons.LuArrowUpCircle className="admin-promote-icon" />
                 <div>
-                  <p className={styles.promoteLabel}>Ascender a Tutor</p>
-                  <p className={styles.promoteDesc}>
+                  <p className="admin-promote-label">Ascender a Tutor</p>
+                  <p className="admin-promote-desc">
                     Este usuario es actualmente <strong>Estudiante</strong>. Puedes
                     ascenderlo a <strong>Tutor</strong> si corresponde.
                   </p>
                 </div>
               </div>
               <button
-                onClick={handlePromote}
-                disabled={promoting}
-                className={styles.promoteBtn}
+                onClick={() => handleRoleChange('assign')}
+                disabled={actionLoading}
+                className="admin-promote-btn"
               >
-                {promoting ? 'Procesando...' : 'Ascender a Tutor'}
+                {actionLoading ? 'Procesando...' : 'Ascender a Tutor'}
               </button>
             </div>
-          ) : (
-            <p className={styles.noActionMsg}>
-              {tipo === TIPO_TUTOR
-                ? 'Este usuario ya es Tutor. No hay ascenso disponible.'
-                : 'El ascenso Estudiante → Tutor solo aplica a usuarios con rol Estudiante.'}
+          )}
+
+          {esTutor && (
+            <div className="admin-revoke-box">
+              <div className="admin-promote-info">
+                <LuIcons.LuArrowDownCircle className="admin-revoke-icon" />
+                <div>
+                  <p className="admin-promote-label">Revertir a Estudiante</p>
+                  <p className="admin-promote-desc">
+                    Este usuario es actualmente <strong>Tutor</strong>. Puedes
+                    revertir su rol a <strong>Estudiante</strong> si corresponde.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => handleRoleChange('revoke')}
+                disabled={actionLoading}
+                className="admin-revoke-btn"
+              >
+                {actionLoading ? 'Procesando...' : 'Revertir a Estudiante'}
+              </button>
+            </div>
+          )}
+
+          {!esEstudiante && !esTutor && (
+            <p className="admin-no-action-msg">
+              Este usuario es Administrador. No se puede cambiar su rol desde este panel.
             </p>
           )}
         </div>

@@ -6,16 +6,22 @@ import LogoUCA from '../assets/img/LogoUCA-blanco.png';
 import { useNavigate } from 'react-router-dom';
 import { GLOBAL } from '../services/apiConfig';
 import { useKeycloak } from '../services/KeycloakProvider';
-import { showError, showWarning } from '../utils/alerts';
+import { showError, showSuccess, showWarning } from '../utils/alerts';
 
 export const LoginPage = () => {
     //CREDENCIALES
     const API_URL = GLOBAL[0].BASE_URL;
+    const API_TARGET = GLOBAL[0].API_TARGET;
     const DEFAULT_PASSWORD = import.meta.env.VITE_DEFAULT_PASSWORD || 'StudiumPassword';
     //KEYCLOAK (OpenID Connect)
     const { keycloak, initialized, authenticated, configured, login: keycloakLogin } = useKeycloak();
     //PARA NAVEGAR AL HOME
     const navigate = useNavigate();
+    // Notifica a App que la sesión (ID/ROL en localStorage) cambió, para que
+    // re-sincronice el rol sin necesidad de recargar la página.
+    const notificarCambioSesion = () => {
+        window.dispatchEvent(new Event('auth-change'));
+    };
     const redirectHome = () => {
         navigate('/home');
     };
@@ -33,60 +39,148 @@ export const LoginPage = () => {
         return regex.test(email);
     }
 
-    const realizarPeticionPost = async (data) => {
-        try {
-            const payload = {
-                password: DEFAULT_PASSWORD,
-                ...data,
-            };
+    const IMAGEN_POR_DEFECTO = 'https://i.pravatar.cc/150?img=11';
 
-            const response = await axios.post(`${API_URL}/auth/register`, payload, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-            //console.log("ID MONGO USER:", response.data); //ID DE MONGO
-            localStorage.setItem("ID", response.data); //GUARDA EN Local Storage EL ID
-            return response.data;
-        } catch (error) {
-            console.error('Error en la petición:', error);
-            throw error;
+    const generarPasswordAleatoria = (longitud = 8) => {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+        let pwd = '';
+        for (let i = 0; i < longitud; i++) {
+            pwd += chars.charAt(Math.floor(Math.random() * chars.length));
         }
-    }
+        return pwd;
+    };
+
+    const registrarUsuario = async ({ username, password, nombre, imagen }) => {
+        const baseUrl = String(API_TARGET || '').replace(/\/+$/, '');
+        const endpoint = `${baseUrl}/api/auth/register`;
+        const payload = {
+            username,
+            password,
+            nombre,
+            imagen: imagen || IMAGEN_POR_DEFECTO,
+            email: username,
+        };
+
+        console.log('[Keycloak] POST', endpoint);
+        console.log('[Keycloak] Body register:', payload);
+
+        const response = await axios.post(endpoint, payload, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+        console.log('[Keycloak → /api/auth/register] respuesta:', response.data);
+        return response.data;
+    };
+
+    const loginConEmail = async (email) => {
+        const baseUrl = String(API_TARGET || '').replace(/\/+$/, '');
+        const endpoint = `${baseUrl}/api/auth/login/email`;
+        const payload = { email };
+
+        console.log('[Keycloak] POST', endpoint);
+        console.log('[Keycloak] Body login/email:', payload);
+
+        const response = await axios.post(endpoint, payload, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+        console.log('[Keycloak → /api/auth/login/email] respuesta:', response.data);
+        return response;
+    };
 
     const postUsernameLogin = async (credentials) => {
-        const normalizedBaseUrl = API_URL.replace(/\/+$/, '');
-        const apiRootUrl = normalizedBaseUrl.endsWith('/api')
-            ? normalizedBaseUrl.slice(0, -4)
-            : normalizedBaseUrl;
+        const baseUrl = String(API_TARGET || '').replace(/\/+$/, '');
+        const endpoint = `${baseUrl}/api/auth/login`;
 
-        const endpoints = [
-            `${apiRootUrl}/api/auth/login`,
-            `${apiRootUrl}/api/auth/login/username`,
-            `${normalizedBaseUrl}/auth/login`,
-            `${normalizedBaseUrl}/auth/login/username`,
-        ];
+        const response = await axios.post(endpoint, credentials, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        console.log('[Studium → /api/auth/login] respuesta completa:', response.data);
+        return response;
+    };
 
-        let lastError;
-        for (const endpoint of [...new Set(endpoints)]) {
-            try {
-                console.log('Ruta de login enviada:', endpoint);
-                console.log('Credenciales enviadas:', credentials);
-                return await axios.post(endpoint, credentials, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
-            } catch (error) {
-                const status = error?.response?.status;
-                if (status !== 404 && status !== 401) {
-                    throw error;
-                }
-                lastError = error;
-            }
+    const ROLES_GENERICOS = ['user', 'usuario'];
+
+    const resolverRolDesdeRoles = (roles) => {
+        if (!Array.isArray(roles) || roles.length === 0) return '';
+        const normalizados = roles.map((rol) => String(rol || '').toLowerCase().trim());
+        // Un rol específico (distinto de "user"), p. ej. "tutor", define el tipo.
+        const especifico = normalizados.find((rol) => rol && !ROLES_GENERICOS.includes(rol));
+        if (especifico) return especifico;
+        // Solo trae el rol base "user" → es estudiante.
+        if (normalizados.some((rol) => ROLES_GENERICOS.includes(rol))) return 'estudiante';
+        return '';
+    };
+
+    const obtenerRolDesdeToken = (token, fallbackData = {}) => {
+        let decoded = {};
+        try {
+            decoded = jwtDecode(token);
+        } catch (error) {
+            decoded = {};
         }
 
-        throw lastError;
+        const userObj = fallbackData.user || {};
+
+        const rolDirecto =
+            decoded.role ||
+            decoded.rol ||
+            decoded.tipo ||
+            fallbackData.role ||
+            fallbackData.rol ||
+            fallbackData.tipo ||
+            userObj.role ||
+            userObj.rol ||
+            userObj.tipo;
+
+        if (rolDirecto) return String(rolDirecto).toLowerCase();
+
+        // El backend envía los roles como arreglo:
+        //   ["user"]          → estudiante
+        //   ["user", "tutor"] → tutor
+        const rolesArray =
+            (Array.isArray(decoded.roles) && decoded.roles) ||
+            (Array.isArray(fallbackData.roles) && fallbackData.roles) ||
+            (Array.isArray(userObj.roles) && userObj.roles) ||
+            [];
+
+        return String(resolverRolDesdeRoles(rolesArray) || '').toLowerCase();
+    };
+
+    const obtenerUserIdDesdeToken = (token, fallbackData = {}) => {
+        let decoded = {};
+        try {
+            decoded = jwtDecode(token);
+        } catch (error) {
+            decoded = {};
+        }
+
+        const fromUserObject = (obj) =>
+            obj && (obj._id || obj.id || obj.userId || obj.uid);
+
+        const rawId =
+            decoded._id ||
+            decoded.id ||
+            decoded.uid ||
+            decoded.userId ||
+            decoded.sub ||
+            fromUserObject(decoded.user) ||
+            fallbackData._id ||
+            fallbackData.id ||
+            fallbackData.uid ||
+            fallbackData.userId ||
+            fromUserObject(fallbackData.user) ||
+            '';
+
+        return String(rawId || '').trim();
+    };
+
+    const resolverRutaPorRol = (role) => {
+        const normalizado = String(role || '').toLowerCase();
+        if (['1', 'admin', 'administrador'].includes(normalizado)) return '/home';
+        if (['3', 'docente', 'catedratico', 'catedrático', 'profesor', 'teacher'].includes(normalizado)) return '/home';
+        if (['2', 'estudiante', 'student', 'alumno'].includes(normalizado)) return '/home';
+        return '/home';
     };
 
     const persistSessionFromToken = async (token, fallbackData = {}) => {
@@ -98,11 +192,15 @@ export const LoginPage = () => {
             decodedToken = {};
         }
 
+        const userObj = fallbackData.user || {};
+
         const email = String(
             decodedToken.email ||
             decodedToken.username ||
             fallbackData.email ||
             fallbackData.username ||
+            userObj.email ||
+            userObj.username ||
             ''
         ).trim();
         const name = String(
@@ -110,6 +208,8 @@ export const LoginPage = () => {
             decodedToken.nombre ||
             fallbackData.name ||
             fallbackData.nombre ||
+            userObj.nombre ||
+            userObj.name ||
             email
         );
         const image = String(
@@ -117,6 +217,8 @@ export const LoginPage = () => {
             decodedToken.imagen ||
             fallbackData.picture ||
             fallbackData.imagen ||
+            userObj.imagen ||
+            userObj.picture ||
             ''
         );
 
@@ -135,7 +237,18 @@ export const LoginPage = () => {
             imagen: image
         };
 
-        await realizarPeticionPost(formUser);
+        //De momento no espera email, por lo que no es necesario esta apartado
+        //await realizarPeticionPost(formUser);
+    };
+
+    const mostrarSesionGuardada = () => {
+        console.log('[Login] Valores guardados en localStorage:', {
+            ID: localStorage.getItem('ID'),
+            ROL: localStorage.getItem('ROL'),
+            EMAIL: localStorage.getItem('EMAIL'),
+            NAME: localStorage.getItem('NAME'),
+            TOKEN: localStorage.getItem('TOKEN'),
+        });
     };
 
     const iniciarSesionConCredenciales = async (event) => {
@@ -153,9 +266,8 @@ export const LoginPage = () => {
 
         try {
             const response = await postUsernameLogin({
-                username: username.trim(),
-                email: username.trim(),
-                password
+                usern: username.trim(),
+                password: password
             });
 
             const token = typeof response.data === 'string'
@@ -169,14 +281,27 @@ export const LoginPage = () => {
             const responseData = typeof response.data === 'object' && response.data !== null ? response.data : {};
 
             await persistSessionFromToken(token, {
-                email: username.trim(),
-                username: responseData.username,
-                name: responseData.name,
-                nombre: responseData.nombre,
-                picture: responseData.picture,
-                imagen: responseData.imagen,
+                ...responseData,
+                email: responseData.user?.email || username.trim(),
             });
-            redirectHome();
+
+            const userId = obtenerUserIdDesdeToken(token, responseData);
+            if (!userId) {
+                throw new Error('El servidor no devolvió un identificador de usuario.');
+            }
+            localStorage.setItem('ID', userId);
+
+            const rol = obtenerRolDesdeToken(token, responseData);
+            if (rol) localStorage.setItem('ROL', rol);
+            mostrarSesionGuardada();
+            notificarCambioSesion();
+            const rutaDestino = resolverRutaPorRol(rol);
+
+            await showSuccess({
+                title: '¡Inicio de sesión exitoso!',
+                text: 'Bienvenido a Studium.',
+            });
+            navigate(rutaDestino);
         } catch (error) {
             console.error('Error al iniciar sesión con correo y contraseña:', error);
             const mensajeError =
@@ -217,7 +342,58 @@ export const LoginPage = () => {
         return String(tokenParsed.picture || tokenParsed.imagen || '');
     };
 
-    const procesarCuentaKeycloak = async ({ tokenParsed, idToken }) => {
+    const finalizarSesionConToken = async (loginResponse, { email, name }) => {
+        const token = typeof loginResponse.data === 'string'
+            ? loginResponse.data
+            : loginResponse.data?.token ||
+              loginResponse.data?.access_token ||
+              loginResponse.data?.accessToken ||
+              loginResponse.data?.jwt;
+
+        if (!token) {
+            showError({ title: 'No se pudo iniciar sesión', text: 'El servidor no devolvió un token.' });
+            return false;
+        }
+
+        const responseData =
+            typeof loginResponse.data === 'object' && loginResponse.data !== null
+                ? loginResponse.data
+                : {};
+
+        await persistSessionFromToken(token, {
+            ...responseData,
+            email: responseData.user?.email || email,
+            name: responseData.user?.nombre || name,
+            nombre: responseData.user?.nombre || name,
+            picture: responseData.user?.imagen || IMAGEN_POR_DEFECTO,
+            imagen: responseData.user?.imagen || IMAGEN_POR_DEFECTO,
+        });
+
+        const userId = obtenerUserIdDesdeToken(token, responseData);
+        if (!userId) {
+            showError({
+                title: 'No se pudo iniciar sesión',
+                text: 'El servidor no devolvió un identificador de usuario.',
+            });
+            return false;
+        }
+        localStorage.setItem('ID', userId);
+
+        const rol = obtenerRolDesdeToken(token, responseData);
+        if (rol) localStorage.setItem('ROL', rol);
+        mostrarSesionGuardada();
+        notificarCambioSesion();
+        const rutaDestino = resolverRutaPorRol(rol);
+
+        await showSuccess({
+            title: '¡Inicio de sesión exitoso!',
+            text: 'Bienvenido a Studium.',
+        });
+        navigate(rutaDestino);
+        return true;
+    };
+
+    const procesarCuentaKeycloak = async ({ tokenParsed }) => {
         const email = String(
             tokenParsed?.email ||
             tokenParsed?.preferred_username ||
@@ -241,31 +417,51 @@ export const LoginPage = () => {
             (`${tokenParsed?.given_name || ''} ${tokenParsed?.family_name || ''}`).trim() ||
             email
         );
-        const imagen = obtenerFotoPerfilKeycloak(tokenParsed);
 
-        localStorage.setItem('EMAIL', email);
-        localStorage.setItem('NAME', name);
-        if (idToken) localStorage.setItem('TOKEN', idToken);
+        console.log('[Keycloak] Datos extraídos del token →', { email, name });
 
-        const formUser = {
-            username: email,
-            nombre: name,
-            tipo: validarEstudiante(email) ? 2 : 3, // 2 → estudiante, 3 → catedrático
-            imagen,
-        };
+        // 1) Intentar login con email (cuenta ya existente).
+        try {
+            const loginResponse = await loginConEmail(email);
+            await finalizarSesionConToken(loginResponse, { email, name });
+            return;
+        } catch (error) {
+            console.warn('[Keycloak] /login/email falló, se intentará registrar la cuenta.', error?.response?.status);
+        }
+
+        // 2) Login falló → registrar la cuenta.
+        const passwordGenerada = generarPasswordAleatoria(8);
+        console.log('[Keycloak] Password generada para el registro:', passwordGenerada);
 
         try {
-            await realizarPeticionPost(formUser);
-        } catch (error) {
-            console.error('Error al enviar los datos del usuario:', error);
-            showError({
-                title: 'Error de conexión',
-                text: 'No se pudo conectar con el servidor. Intenta más tarde.',
+            await registrarUsuario({
+                username: email,
+                password: passwordGenerada,
+                nombre: name,
+                imagen: IMAGEN_POR_DEFECTO,
             });
+        } catch (error) {
+            console.error('Error en /api/auth/register:', error);
+            const mensaje =
+                error?.response?.data?.message ||
+                error?.response?.data?.error ||
+                'No se pudo registrar la cuenta en Studium.';
+            showError({ title: 'Error al registrar', text: mensaje });
             return;
         }
 
-        redirectHome();
+        // 3) Reintentar login con email tras registrar.
+        try {
+            const loginResponse = await loginConEmail(email);
+            await finalizarSesionConToken(loginResponse, { email, name });
+        } catch (error) {
+            console.error('Error en /api/auth/login/email tras registrar:', error);
+            const mensaje =
+                error?.response?.data?.message ||
+                error?.response?.data?.error ||
+                'No se pudo iniciar sesión con la cuenta recién creada.';
+            showError({ title: 'No se pudo iniciar sesión', text: mensaje });
+        }
     };
 
     const iniciarSesionConKeycloak = async () => {
@@ -326,6 +522,7 @@ export const LoginPage = () => {
         if (localStorage.getItem('ID')) {
             // Sesión ya estaba persistida; navega al home.
             processedRedirectRef.current = true;
+            notificarCambioSesion();
             redirectHome();
             return;
         }
@@ -352,11 +549,11 @@ export const LoginPage = () => {
             <h1><b><span className='h1-rosa'>Bienvenidos a </span><span className='h1-azul'>Studium</span></b></h1>
             <article>
                 <img src={LogoUCA} alt="Logo-UCA"></img>
-                <p className='login-subtitle'>Inicia sesión con correo y contraseña</p>
+                <p className='login-subtitle'>Inicia sesión con nombre de usuario y contraseña</p>
                 <form id='login' onSubmit={iniciarSesionConCredenciales}>
                     <input
-                        type='email'
-                        placeholder='Correo'
+                        type='text'
+                        placeholder='Usuario'
                         autoComplete='username'
                         value={username}
                         onChange={(event) => setUsername(event.target.value)}

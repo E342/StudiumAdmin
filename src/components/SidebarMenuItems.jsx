@@ -1,6 +1,7 @@
 import * as TbIcons from "react-icons/tb";
 import * as LuIcons from "react-icons/lu";
 import * as BiIcons from "react-icons/bi";
+import { ROLES } from "../utils/roles";
 /* 
 Para mas icons:
 import * as Io5Icons from "react-icons/io5";
@@ -22,7 +23,7 @@ export const sidebarMenuItems = [
     {
         title: "Perfil",
         path: "/perfil",
-        icon: <LuIcons.LuCircleUser />,
+        icon: <LuIcons.LuUserCircle2 />,
         cName: "nav-text",
     },
     {
@@ -36,5 +37,33 @@ export const sidebarMenuItems = [
         path: "/search",
         icon: <TbIcons.TbInputSearch />,
         cName: "nav-text",
+    },
+    {
+        title: "Mis Cursos",
+        path: "/mis-cursos",
+        icon: <LuIcons.LuBookOpen />,
+        cName: "nav-text",
+        roles: [ROLES.TUTOR],
+    },
+    {
+        title: "Aprobaciones",
+        path: "/aprobaciones",
+        icon: <LuIcons.LuClipboardCheck />,
+        cName: "nav-text",
+        roles: [ROLES.TUTOR],
+    },
+    {
+        title: "Panel Administrador",
+        path: "/admin",
+        icon: <LuIcons.LuLayoutDashboard />,
+        cName: "nav-text",
+        roles: [ROLES.ADMIN],
+    },
+    {
+        title: "Usuarios",
+        path: "/admin/users",
+        icon: <LuIcons.LuUsers />,
+        cName: "nav-text",
+        roles: [ROLES.ADMIN],
     },
 ];

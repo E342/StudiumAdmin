@@ -1,18 +1,20 @@
 ﻿import React, { useState, useRef } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import '../assets/styles/components/_formCurso.scss';
 import { GLOBAL } from '../services/apiConfig';
 import { useUserData } from '../hooks/useUserData';
 import { showSuccess, showError, showWarning } from '../utils/alerts';
+import { materiaOpc } from '../utils/materias';
 
 const CreateCoursePage = ({ onSubmit = () => { }, defaultValue }) => {
     const API_URL = GLOBAL.map((e) => { return e.BASE_URL });
     const userId = localStorage.getItem("ID");
     const { userData } = useUserData(userId);
     const imagenInputRef = useRef(null);
+    const navigate = useNavigate();
 
-    const name_user = userData ? userData.nombre : "";
+    const name_user = localStorage.getItem("NAME") || (userData ? userData.nombre : "");
     const [formState, setFormState] = useState(
         defaultValue || {
             id_tutor: `${userId}`,
@@ -27,11 +29,6 @@ const CreateCoursePage = ({ onSubmit = () => { }, defaultValue }) => {
             descripcion: "",
         }
     );
-
-    const validateImageUrl = (url) => {
-        const regex = /\.(jpeg|jpg|gif|png|bmp)$/;
-        return regex.test(url);
-    };
 
     // Funcion para validar el formulario
     const validateForm = (formData) => {
@@ -68,20 +65,8 @@ const CreateCoursePage = ({ onSubmit = () => { }, defaultValue }) => {
             errors.push("Por favor seleccionar la fecha de finalización del curso");
         }
 
-        // Validación de la URL de la imagen
-        if (!validateImageUrl(formData.imagen)) {
-            errors.push('Por favor ingrese una URL válida, debe contener una de las siguientes terminaciones: jpeg, jpg o png');
-        }
-
-        // Validación de la objetivos
-        if (formData.objetivos.length < 10) {
-            errors.push("Por favor ingresar objetivos válidos para el curso");
-        }
-
-        // Validación de la descripcion
-        if (formData.descripcion.length < 10) {
-            errors.push("Por favor ingresar una descripción válida del curso");
-        }
+        // La imagen, los objetivos y la descripción son opcionales:
+        // se permite cualquier valor (incluido vacío) sin validación.
 
         return errors;
     };
@@ -111,10 +96,12 @@ const CreateCoursePage = ({ onSubmit = () => { }, defaultValue }) => {
 
             if (response.status === 201) {
                 onSubmit(formState);
-                showSuccess({
+                await showSuccess({
                     title: '¡Curso creado exitosamente!',
                     text: 'El curso se registró correctamente y ya está disponible.',
                 });
+
+                navigate('/mis-cursos');
 
                 setFormState({
                     id_tutor: `${userId}`,
@@ -144,54 +131,6 @@ const CreateCoursePage = ({ onSubmit = () => { }, defaultValue }) => {
             });
         }
     };
-
-    const materiaOpc = [
-        "Seleccione una materia",
-        "Precálculo",
-        "Elementos para el estudio de la ciencia y la tecnología",
-        "Matemática discreta I",
-        "Fundamentos de programación",
-        "Álgebra vectorial y matrices",
-        "Cálculo I",
-        "Programación de estructuras dinámicas",
-        "Matemática discreta II",
-        "Física I",
-        "Cálculo II",
-        "Programación orientada a objetos",
-        "Bases de datos",
-        "Electricidad y magnetismo",
-        "Cálculo III",
-        "Programación web",
-        "Administración de bases de datos",
-        "Optativa humanístico-social I",
-        "Análisis numérico",
-        "Redes de computadoras",
-        "Programación de dispositivos móviles",
-        "Análisis de sistemas",
-        "Física II",
-        "Optativa humanístico-social II",
-        "Análisis de algoritmos",
-        "Programación de artefactos",
-        "Probabilidad y estadística",
-        "Seguridad en entornos de desarrollo",
-        "Arquitectura de computadoras",
-        "Técnicas de simulación de computadoras",
-        "Programación N-capas",
-        "Fundamentos de inteligencia de negocios",
-        "Optativa humanístico-social III",
-        "Sistemas operativos",
-        "Programación declarativa",
-        "Ingeniería de software",
-        "Formulación y evaluación de proyectos",
-        "Optativa humanístico-social IV",
-        "Optativa técnica I",
-        "Aplicaciones código abierto",
-        "Práctica profesional I",
-        "Optativa técnica II",
-        "Teoría de lenguaje de programación",
-        "Optativa humanístico-social V",
-        "Práctica profesional II",
-    ];
 
     return (
         <main className="main_formCurso">
@@ -225,6 +164,7 @@ const CreateCoursePage = ({ onSubmit = () => { }, defaultValue }) => {
                         value={formState.nombre_tutor}
                         onChange={handleChange}
                         className="input-formCurso"
+                        disabled
                     />
                 </div>
                 <div className="form-group-curso">
@@ -274,7 +214,7 @@ const CreateCoursePage = ({ onSubmit = () => { }, defaultValue }) => {
                         className="input-formCurso"
                     />
                 </div>
-                <div className="form-group-curso">
+                <div className="form-group-curso form-group-full">
                     <label htmlFor="fecha_fin" className="label-formCurso">Imagen:</label>
                     <input
                         id="imagen"
