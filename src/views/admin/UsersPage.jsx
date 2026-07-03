@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import * as LuIcons from 'react-icons/lu';
 import axios from 'axios';
 import { GLOBAL } from '../../services/apiConfig';
-import { ROLES, etiquetaRol } from '../../utils/roles';
+import { ROLES, etiquetaRol, resolverRolDesdeRoles } from '../../utils/roles';
 import '../../assets/styles/admin/_usersPage.scss';
 
 const API_URL = GLOBAL[0].BASE_URL;
@@ -32,6 +32,13 @@ export default function UsersPage() {
       const response = await axios.get(`${API_URL}/user`);
       let allUsers = response.data;
       allUsers = Array.isArray(allUsers) ? allUsers : allUsers.users || [];
+
+      // El backend entrega el rol en el arreglo `roles` (p. ej. ["user","tutor"]),
+      // para que la tabla y el filtro por rol reflejen el rol real y actualizado.
+      allUsers = allUsers.map((u) => ({
+        ...u,
+        tipo: resolverRolDesdeRoles(Array.isArray(u.roles) ? u.roles : []) || ROLES.ESTUDIANTE,
+      }));
 
       let filtered = allUsers;
 

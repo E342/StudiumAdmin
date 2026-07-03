@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import * as LuIcons from 'react-icons/lu';
 import axios from 'axios';
 import { GLOBAL } from '../../services/apiConfig';
+import { ROLES, resolverRolDesdeRoles } from '../../utils/roles';
 import '../../assets/styles/admin/_dashboard.scss';
 
 const API_URL = GLOBAL[0].BASE_URL;
@@ -17,11 +18,17 @@ export default function AdminDashboard() {
         const data = response.data;
         const usersArr = Array.isArray(data) ? data : data.users || [];
 
+        // El backend entrega el rol en el arreglo `roles` (p. ej. ["user","tutor"]),
+        // no en un campo `tipo` plano. Lo resolvemos aquí para que las tarjetas
+        // reflejen el conteo real y actualizado tras ascender/revertir un rol.
+        const tipos = usersArr.map(
+          (u) => resolverRolDesdeRoles(Array.isArray(u.roles) ? u.roles : []) || ROLES.ESTUDIANTE
+        );
+
         setStats({
           totalUsers: usersArr.length,
-          // tipo 2 → estudiante, tipo 3 → tutor (mismo mapeo que utils/roles.js)
-          students: usersArr.filter((u) => u.tipo === 2).length,
-          tutors: usersArr.filter((u) => u.tipo === 3).length,
+          students: tipos.filter((t) => t === ROLES.ESTUDIANTE).length,
+          tutors: tipos.filter((t) => t === ROLES.TUTOR).length,
         });
       } catch (error) {
         console.error('[AdminDashboard] Error al cargar estadísticas:', error);
