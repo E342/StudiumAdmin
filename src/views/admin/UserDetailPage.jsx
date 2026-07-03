@@ -19,10 +19,22 @@ export default function UserDetailPage() {
 
   const fetchProfile = async () => {
     try {
-      const response = await axios.get(`${API_URL}/user/profile/${id}`);
-      // El backend puede devolver { user: {...} } o el objeto directamente
+      const token = localStorage.getItem('TOKEN');
+      const response = await axios.get(`${API_URL}/user/profile/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = response.data;
-      setProfile(data.user || data.usuario || data);
+      // El backend no usa el campo `tipo` — el rol viene en el array `roles`.
+      // Derivamos tipo localmente igual que lo hace App.jsx con resolverRolDesdeRoles.
+      const rolesArr = Array.isArray(data.roles) ? data.roles : [];
+      const GENERICOS = ['user', 'usuario'];
+      const especifico = rolesArr.find((r) => !GENERICOS.includes(r));
+      let tipoDerivado;
+      if (especifico === 'tutor') tipoDerivado = ROLES.TUTOR;
+      else if (especifico === 'admin' || especifico === 'sysadmin') tipoDerivado = ROLES.ADMIN;
+      else tipoDerivado = ROLES.ESTUDIANTE;
+
+      setProfile({ ...data, tipo: tipoDerivado });
     } catch (error) {
       console.error('[UserDetailPage] Error al cargar perfil:', error);
       setProfile(null);
@@ -54,27 +66,14 @@ export default function UserDetailPage() {
 
     setPromoting(true);
     try {
-      // Intentar las rutas más comunes del backend para actualizar usuario
-      // El backend puede exponer PATCH /user/:id o PATCH /user/profile/:id
-      let updateError;
-      const routes = [
-        `${API_URL}/user/profile/${id}`,
-        `${API_URL}/user/${id}`,
-        `${API_URL}/users/${id}`,
-      ];
-
-      let success = false;
-      for (const route of routes) {
-        try {
-          const res = await axios.patch(route, { tipo: ROLES.TUTOR, roles: ['tutor'] });
-          if (res.status < 400) { success = true; break; }
-        } catch (err) {
-          if (err?.response?.status !== 404) { updateError = err; break; }
-          updateError = err;
-        }
-      }
-
-      if (!success) throw updateError;
+      // Ruta real del backend: PATCH /api/user/:userId/role
+      // Requiere token del backend (localStorage TOKEN) + rol admin
+      const token = localStorage.getItem('TOKEN');
+      await axios.patch(
+        `${API_URL}/user/${id}/role`,
+        { role: 'tutor', action: 'assign' },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       await showSuccess({
         title: '¡Usuario ascendido!',
@@ -87,7 +86,7 @@ export default function UserDetailPage() {
       console.error('[UserDetailPage] Error al ascender:', error);
       showError({
         title: 'No se pudo actualizar',
-        text: error?.response?.data?.message || 'No se pudo actualizar el rol del usuario.',
+        text: error?.response?.data?.error || 'No se pudo actualizar el rol del usuario.',
       });
     } finally {
       setPromoting(false);
