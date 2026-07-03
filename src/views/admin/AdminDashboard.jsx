@@ -42,7 +42,7 @@ export default function AdminDashboard() {
   return (
     <div className="admin-dashboard">
       <div className="admin-page-header">
-        <h1>Dashboard</h1>
+        <h1>Panel Administrador</h1>
         <p>Resumen general del sistema Studium</p>
       </div>
 

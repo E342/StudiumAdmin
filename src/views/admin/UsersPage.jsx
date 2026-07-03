@@ -71,7 +71,6 @@ export default function UsersPage() {
     <div className="admin-users-page">
       <div className="admin-page-header">
         <h1>Usuarios</h1>
-        <p>Lista de usuarios registrados en el sistema</p>
       </div>
 
       {/* Filtros */}

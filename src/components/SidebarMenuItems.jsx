@@ -53,7 +53,7 @@ export const sidebarMenuItems = [
         roles: [ROLES.TUTOR],
     },
     {
-        title: "Dashboard Admin",
+        title: "Panel Administrador",
         path: "/admin",
         icon: <LuIcons.LuLayoutDashboard />,
         cName: "nav-text",

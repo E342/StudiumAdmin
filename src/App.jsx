@@ -8,6 +8,7 @@ import SidebarMenu from './components/SidebarMenu';
 import MessagesPage from './views/MessagesPage';
 import SearchPage from './views/SearchPage';
 import StudentProfilePage from './views/StudentProfilePage';
+import AdminProfilePage from './views/AdminProfilePage';
 import CreateCoursePage from './views/CreateCoursePage';
 import CourseResourcesPage from './views/CourseResourcesPage';
 import MyCoursesPage from './views/MyCoursesPage';
@@ -113,6 +114,7 @@ function App() {
                 <>
                   {userType === 2 && <StudentProfilePage />}
                   {userType === 3 && <TeacherProfilePage />}
+                  {userType === ROLES.ADMIN && <AdminProfilePage />}
                 </>
               }
             />
